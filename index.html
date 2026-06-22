@@ -157,8 +157,8 @@
     .card:hover .card-arrow svg { transform: translateX(5px); }
 
     .powered-by {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      margin-top: 10px; margin-bottom: 4px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-top: 40px; margin-bottom: 0;
       font-size: .78rem; color: #888; letter-spacing: .04em;
     }
     .powered-by svg { display: block; }
@@ -177,16 +177,6 @@
   <p class="eyebrow">Sistema de demostración</p>
   <h1>Carl's <span>Jr</span> Demo</h1>
   <p class="subtitle">Selecciona el módulo que quieres abrir</p>
-
-  <p class="powered-by">
-    <span>Powered by</span>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 56" height="26" aria-label="Admira">
-      <!-- cloud shape matching Admira logo -->
-      <path d="M8 36 C8 26 16 20 24 21 C26 14 34 9 43 12 C47 7 54 5 61 8 C66 4 73 4 78 8 C84 5 91 8 92 15 C98 16 102 22 100 28 C98 34 92 37 86 36 Z" fill="none" stroke="#fff" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
-      <!-- wordmark -->
-      <text x="112" y="39" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="28" fill="#fff" letter-spacing="-0.5">admira</text>
-    </svg>
-  </p>
 
   <div class="cards">
 
@@ -221,6 +211,29 @@
     </a>
 
   </div>
+
+  <p class="powered-by">
+    <span>Powered by</span>
+    <!-- Admira logo: cloud outline (3 bumps) + wordmark in brand green -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 72" height="30" aria-label="Admira">
+      <g fill="none" stroke="#4a9c3f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+        <!-- left bump (small) -->
+        <path d="M14 46 C14 38 20 32 28 33"/>
+        <!-- connector -->
+        <path d="M28 33 C28 24 36 18 46 20"/>
+        <!-- middle bump (medium) -->
+        <path d="M46 20 C46 11 55 6 65 9"/>
+        <!-- right bump (large) -->
+        <path d="M65 9 C70 3 80 2 88 7 C95 3 104 5 108 12"/>
+        <!-- right slope down -->
+        <path d="M108 12 C116 14 120 22 118 30 C116 38 108 43 100 42"/>
+        <!-- bottom flat with slight curve -->
+        <path d="M100 42 Q57 48 14 46"/>
+      </g>
+      <!-- wordmark -->
+      <text x="132" y="47" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="32" fill="#4a9c3f" letter-spacing="-1">admira</text>
+    </svg>
+  </p>
 
   <footer>Carl's Jr Demo · Uso interno</footer>
 
