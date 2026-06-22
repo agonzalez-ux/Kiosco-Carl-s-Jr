@@ -1132,13 +1132,12 @@
         .map(i => { const m = (i.note || '').match(/Bebida:\s*([^·]+)/); return m ? m[1].trim() : null; })
         .filter(Boolean);
       const hasDrink   = drinkNames.length > 0;
-      const maxProduct = hasDrink ? 2 : 3;
-      const photos     = order.items.filter(i => i.img).slice(0, maxProduct);
-      const photoHtml  = (photos.length || hasDrink) ? `
+      const photos     = order.items.filter(i => i.img).slice(0, 3);
+      const photoHtml  = photos.length ? `
         <div class="active-photo-row">
           ${photos[0]?.img ? `<img class="active-photo" src="${photos[0].img}" alt="" onerror="this.style.opacity='.2'">` : ''}
           ${photos[1]?.img ? `<img class="active-photo-extra" src="${photos[1].img}" alt="" onerror="this.style.opacity='.2'">` : ''}
-          ${hasDrink ? `<img class="active-photo-extra" src="${drinkImgSrc(drinkNames[0])}" alt="${drinkNames[0]}" title="${drinkNames[0]}">` : (photos[2]?.img ? `<img class="active-photo-extra" src="${photos[2].img}" alt="" onerror="this.style.opacity='.2'">` : '')}
+          ${photos[2]?.img ? `<img class="active-photo-extra" src="${photos[2].img}" alt="" onerror="this.style.opacity='.2'">` : ''}
         </div>
       ` : '';
 
