@@ -156,10 +156,17 @@
     .card-arrow svg { transition: transform .2s; }
     .card:hover .card-arrow svg { transform: translateX(5px); }
 
+    .powered-by {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 10px; margin-bottom: 4px;
+      font-size: .78rem; color: #888; letter-spacing: .04em;
+    }
+    .powered-by svg { display: block; }
+
     footer {
-      margin-top: 56px;
-      color: #333;
-      font-size: .75rem;
+      margin-top: 48px;
+      color: #aaa;
+      font-size: .72rem;
       text-align: center;
     }
   </style>
@@ -170,6 +177,16 @@
   <p class="eyebrow">Sistema de demostración</p>
   <h1>Carl's <span>Jr</span> Demo</h1>
   <p class="subtitle">Selecciona el módulo que quieres abrir</p>
+
+  <p class="powered-by">
+    <span>Powered by</span>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 56" height="26" aria-label="Admira">
+      <!-- cloud shape matching Admira logo -->
+      <path d="M8 36 C8 26 16 20 24 21 C26 14 34 9 43 12 C47 7 54 5 61 8 C66 4 73 4 78 8 C84 5 91 8 92 15 C98 16 102 22 100 28 C98 34 92 37 86 36 Z" fill="none" stroke="#fff" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <!-- wordmark -->
+      <text x="112" y="39" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="28" fill="#fff" letter-spacing="-0.5">admira</text>
+    </svg>
+  </p>
 
   <div class="cards">
 
@@ -205,7 +222,7 @@
 
   </div>
 
-  <footer>Carl's Jr Demo · Internal use only</footer>
+  <footer>Carl's Jr Demo · Uso interno</footer>
 
 </body>
 </html>
