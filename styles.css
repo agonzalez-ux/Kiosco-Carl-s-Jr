@@ -749,6 +749,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .pd-qty-val { font-weight: 800; font-size: 1.1rem; min-width: 24px; text-align: center; }
 
 .pd-footer { padding: 0 20px 28px; }
+.pd-variant-section { padding: 0 20px 8px; }
 .btn-add-cart {
   width: 100%; padding: 18px;
   background: var(--red); color: var(--white);
@@ -782,8 +783,29 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
   background: linear-gradient(to top, var(--dark), transparent); pointer-events: none;
 }
+/* Mystery card thumbnail */
+.pc-img { position: relative; }
+.pc-img .mystery-card-img { width: 100%; height: 100%; object-fit: cover; filter: blur(6px) brightness(0.45) !important; transform: none !important; transition: none; }
+.mystery-card-q {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-size: 5rem; font-weight: 900; color: #fff;
+  text-shadow: 0 2px 24px rgba(255,200,44,.9), 0 0 60px rgba(255,200,44,.5);
+  z-index: 3;
+}
+
 .mystery-hero { background: radial-gradient(ellipse at 55% 35%, #1a1200 0%, #0d0d0d 70%); }
-.mystery-hero-icon { font-size: 6rem; animation: hero-float 3s ease-in-out infinite; filter: drop-shadow(0 8px 32px rgba(255,200,44,.5)); }
+.mystery-hero-img {
+  width: 85%; height: 85%; object-fit: contain;
+  filter: blur(8px) brightness(0.6);
+  animation: hero-float 5s ease-in-out infinite;
+}
+.mystery-hero-q {
+  position: absolute; font-family: var(--font-head);
+  font-size: 9rem; font-weight: 900; color: #fff;
+  text-shadow: 0 4px 40px rgba(255,200,44,.8), 0 0 80px rgba(255,200,44,.4);
+  animation: hero-float 3s ease-in-out infinite;
+  line-height: 1; z-index: 2;
+}
 .mystery-add-btn { background: linear-gradient(135deg, var(--yellow), #e6a800) !important; color: var(--black) !important; font-weight: 800 !important; }
 
 .combo-hero img {

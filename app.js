@@ -760,9 +760,11 @@ function renderProducts() {
 function productCard(p) {
   const stars = '⭐'.repeat(p.stars) + (p.stars < 5 ? '<span style="opacity:.3">' + '⭐'.repeat(5 - p.stars) + '</span>' : '');
   const badgeHtml = p.badge ? `<div class="pc-badge ${p.badgeStyle || ''}">${p.badge}</div>` : '';
-  const imgHtml = p.img
-    ? `<img src="${p.img}" alt="${pName(p)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=pc-emoji>🍔</span>'">`
-    : `<span class="pc-emoji">🍔</span>`;
+  const imgHtml = p.isMystery
+    ? `<img src="https://carlsjr.es/wp-content/uploads/2023/03/Western-Bacon-Cheeseburger.png" alt="Sorpresa" class="mystery-card-img"><div class="mystery-card-q">?</div>`
+    : p.img
+      ? `<img src="${p.img}" alt="${pName(p)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=pc-emoji>🍔</span>'">`
+      : `<span class="pc-emoji">🍔</span>`;
   return `
     <article class="product-card" data-product="${p.id}" role="button" tabindex="0" aria-label="${pName(p)}, ${EUR.format(p.price)}">
       ${badgeHtml}
@@ -790,11 +792,54 @@ function bindProductDialog() {
   $('productDialog').addEventListener('click', e => { if (e.target === $('productDialog')) $('productDialog').close(); });
 }
 
+function openDrinkPicker(p) {
+  const isCoffee = p.id === 'cafe-te';
+  const opts = isCoffee ? COFFEE_OPTIONS : DRINKS_OPTIONS.filter(d => d.id !== 'none');
+  dialogProduct = p; dialogQty = 1; dialogMods = [];
+  renderProductDialog(p);
+
+  // Inject variant selector before the footer
+  const variantHtml = opts.map(o => `
+    <button class="combo-opt pick-variant" data-variant="${o.id}" type="button">
+      <span class="combo-opt-icon">${o.icon}</span>
+      <div><div class="combo-opt-label">${o.label}</div></div>
+    </button>`).join('');
+  const extraSec = document.createElement('div');
+  extraSec.className = 'combo-section pd-variant-section';
+  extraSec.innerHTML = `<h3>${isCoffee ? '☕ ¿Qué tipo?' : '🥤 ¿Qué bebida?'} <span class="combo-required">*</span></h3><div class="combo-options">${variantHtml}</div>`;
+  const footer = $('pdContent').querySelector('.pd-footer');
+  $('pdContent').insertBefore(extraSec, footer);
+
+  const addBtn = $('btnAddCart');
+  let chosenVariant = null;
+  addBtn.disabled = true;
+  addBtn.textContent = isCoffee ? '☕ Elige el tipo' : '🥤 Elige la bebida';
+
+  extraSec.querySelectorAll('.pick-variant').forEach(btn => {
+    btn.addEventListener('click', () => {
+      chosenVariant = btn.dataset.variant;
+      extraSec.querySelectorAll('.pick-variant').forEach(b => b.classList.toggle('selected', b.dataset.variant === chosenVariant));
+      addBtn.disabled = false;
+      addBtn.textContent = `${t('addToCart')} · ${EUR.format(p.price)}`;
+    });
+  });
+
+  addBtn.onclick = () => {
+    if (!chosenVariant) return;
+    const label = (isCoffee ? COFFEE_OPTIONS : DRINKS_OPTIONS).find(o => o.id === chosenVariant)?.label || chosenVariant;
+    addToCart(p, [], dialogQty, label);
+    $('productDialog').close();
+  };
+  $('productDialog').showModal();
+}
+
 function openProduct(id) {
   const p = productById(id);
   if (!p) return;
   if (p.isMystery) { openMysteryConfigurator(p); return; }
-  if (p.combo || p.cat === 'combos') { openComboConfigurator(p); return; }
+  if (p.cat === 'drinks') { openDrinkPicker(p); return; }
+  if (p.cat === 'combos' || p.cat === 'kids') { openComboConfigurator(p, 'combo'); return; }
+  if (p.cat === 'burgers' || p.cat === 'salads') { openComboConfigurator(p, 'solo'); return; }
   dialogProduct = p;
   dialogQty = 1;
   dialogMods = [];
@@ -1573,21 +1618,29 @@ const CUP_IMGS = {
 };
 
 const DRINKS_OPTIONS = [
-  { id: 'coca-cola',  label: 'Coca-Cola',       labelEn: 'Coca-Cola',       icon: '🥤', img: CUP_IMGS['coca-cola'], extra: 0 },
-  { id: 'fanta',      label: 'Fanta Naranja',   labelEn: 'Fanta Orange',    icon: '🟠', img: CUP_IMGS['fanta'],     extra: 0 },
-  { id: 'sprite',     label: 'Sprite',          labelEn: 'Sprite',          icon: '💚', img: CUP_IMGS['sprite'],    extra: 0 },
-  { id: 'aquarius',   label: 'Aquarius',        labelEn: 'Aquarius',        icon: '💙', img: CUP_IMGS['aquarius'],  extra: 0 },
-  { id: 'monster',    label: 'Monster',         labelEn: 'Monster',         icon: '⚡', img: CUP_IMGS['monster'],   extra: 0.5 },
-  { id: 'agua',       label: 'Agua',            labelEn: 'Water',           icon: '💧', img: CUP_IMGS['agua'],      extra: 0 },
+  { id: 'none',       label: 'Sin bebida',       labelEn: 'No drink',        icon: '🙅', img: null,                 extra: 0,    retail: 0    },
+  { id: 'coca-cola',  label: 'Coca-Cola',         labelEn: 'Coca-Cola',       icon: '🥤', img: CUP_IMGS['coca-cola'], extra: 0,    retail: 2.50 },
+  { id: 'fanta',      label: 'Fanta Naranja',     labelEn: 'Fanta Orange',    icon: '🟠', img: CUP_IMGS['fanta'],     extra: 0,    retail: 2.50 },
+  { id: 'sprite',     label: 'Sprite',            labelEn: 'Sprite',          icon: '💚', img: CUP_IMGS['sprite'],    extra: 0,    retail: 2.50 },
+  { id: 'aquarius',   label: 'Aquarius',          labelEn: 'Aquarius',        icon: '💙', img: CUP_IMGS['aquarius'],  extra: 0,    retail: 2.50 },
+  { id: 'monster',    label: 'Monster',           labelEn: 'Monster',         icon: '⚡', img: CUP_IMGS['monster'],   extra: 0.50, retail: 3.00 },
+  { id: 'agua',       label: 'Agua',              labelEn: 'Water',           icon: '💧', img: CUP_IMGS['agua'],      extra: 0,    retail: 1.50 },
 ];
 
+const COFFEE_OPTIONS = [
+  { id: 'cafe-solo',    label: 'Café Solo',      labelEn: 'Espresso',      icon: '☕' },
+  { id: 'cafe-cortado', label: 'Cortado',        labelEn: 'Cortado',       icon: '☕' },
+  { id: 'cafe-leche',   label: 'Café con Leche', labelEn: 'Café Latte',    icon: '☕' },
+  { id: 'te-negro',     label: 'Té Negro',       labelEn: 'Black Tea',     icon: '🍵' },
+  { id: 'manzanilla',   label: 'Manzanilla',     labelEn: 'Chamomile Tea', icon: '🍵' },
+];
 
 const SIDES_OPTIONS = [
-  { id: 'none',       label: 'Sin acompañamiento', labelEn: 'No side',        icon: '🙅', img: null, extra: 0 },
-  { id: 'crisscuts',  label: 'Crisscuts',          labelEn: 'Crisscuts',      icon: '🍟', img: 'https://carlsjr.es/wp-content/uploads/2023/03/crisscuts-2.png', extra: 0 },
-  { id: 'fries',      label: 'Patatas Fritas',     labelEn: 'French Fries',   icon: '🍟', img: 'https://carlsjr.es/wp-content/uploads/2023/03/Patatas-Fritas.png', extra: 0 },
-  { id: 'nuggets',    label: 'Chicken Nuggets',    labelEn: 'Chicken Nuggets',icon: '🍗', img: 'https://carlsjr.es/wp-content/uploads/2023/03/Chicken-Nuggets.png', extra: 0 },
-  { id: 'rings',      label: 'Aros de cebolla',    labelEn: 'Onion Rings',    icon: '⭕', img: 'https://carlsjr.es/wp-content/uploads/2023/03/crisscuts-2.png', extra: 0.5 },
+  { id: 'none',       label: 'Sin acompañamiento', labelEn: 'No side',         icon: '🙅', img: null, extra: 0,    retail: 0    },
+  { id: 'crisscuts',  label: 'Crisscuts',          labelEn: 'Crisscuts',       icon: '🍟', img: 'https://carlsjr.es/wp-content/uploads/2023/03/crisscuts-2.png', extra: 0,    retail: 2.50 },
+  { id: 'fries',      label: 'Patatas Fritas',     labelEn: 'French Fries',    icon: '🍟', img: 'https://carlsjr.es/wp-content/uploads/2023/03/Patatas-Fritas.png', extra: 0,    retail: 2.50 },
+  { id: 'nuggets',    label: 'Chicken Nuggets',    labelEn: 'Chicken Nuggets', icon: '🍗', img: 'https://carlsjr.es/wp-content/uploads/2023/03/Chicken-Nuggets.png', extra: 0,    retail: 3.00 },
+  { id: 'rings',      label: 'Aros de cebolla',    labelEn: 'Onion Rings',     icon: '⭕', img: 'https://carlsjr.es/wp-content/uploads/2023/03/crisscuts-2.png', extra: 0.50, retail: 3.00 },
 ];
 
 const DESSERT_OPTIONS = [
@@ -1623,7 +1676,8 @@ function openMysteryConfigurator(product) {
 
   $('comboContent').innerHTML = `
     <div class="combo-hero mystery-hero">
-      <div class="mystery-hero-icon">🎲</div>
+      <img class="mystery-hero-img" src="https://carlsjr.es/wp-content/uploads/2023/03/Western-Bacon-Cheeseburger.png" alt="Sorpresa" onerror="this.style.display='none'">
+      <div class="mystery-hero-q">?</div>
     </div>
     <div class="combo-body">
       <div class="combo-name">Mystery Carl's</div>
@@ -1671,46 +1725,71 @@ function openMysteryConfigurator(product) {
   $('comboDialog').showModal();
 }
 
-function openComboConfigurator(product) {
+function openComboConfigurator(product, mode = 'combo') {
+  const isSolo = mode === 'solo';
   comboState = {
-    product,
-    drink: null,
-    side: null,
-    dessert: null,
-    mods: [],
-    qty: 1
+    product, mode,
+    drink:   isSolo ? DRINKS_OPTIONS[0] : null,  // 'none' preselected for solo
+    side:    isSolo ? SIDES_OPTIONS[0]  : null,   // 'none' preselected for solo
+    dessert: isSolo ? DESSERT_OPTIONS[0]: null,   // 'none' preselected for solo
+    mods: [], qty: 1
   };
   renderComboDialog();
   $('comboDialog').showModal();
 }
 
+function optPrice(opt, field) {
+  // For solo mode use retail price, for combo use extra upcharge
+  return comboState.mode === 'solo' ? (opt?.retail ?? 0) : (opt?.[field] ?? 0);
+}
+
 function comboTotal() {
-  const extras = (comboState.drink?.extra ?? 0) + (comboState.side?.extra ?? 0) + (comboState.dessert?.extra ?? 0);
-  const modsExtra = comboState.mods.reduce((s, id) => s + (BURGER_MODS.find(m => m.id === id)?.price || 0), 0);
-  return round((comboState.product.price + extras + modsExtra) * comboState.qty);
+  const drinkCost   = optPrice(comboState.drink,   'extra');
+  const sideCost    = optPrice(comboState.side,     'extra');
+  const dessertCost = (comboState.dessert?.extra ?? 0);
+  const modsExtra   = comboState.mods.reduce((s, id) => s + (BURGER_MODS.find(m => m.id === id)?.price || 0), 0);
+  return round((comboState.product.price + drinkCost + sideCost + dessertCost + modsExtra) * comboState.qty);
 }
 
 function comboReady() {
+  if (comboState.product?.isMystery) return !!comboState.drink;
+  if (comboState.mode === 'solo') return true; // none options preselected, always ready
   return !!(comboState.drink && comboState.side && comboState.dessert);
 }
 
 function comboBlockMsg() {
-  if (!comboState.drink) return '🥤 Elige tu bebida primero';
-  if (!comboState.side)  return '🍟 Elige tu acompañamiento';
+  if (comboState.mode === 'solo' || comboState.product?.isMystery) {
+    if (!comboState.drink) return '🥤 Elige tu bebida primero';
+    return null;
+  }
+  if (!comboState.drink)   return '🥤 Elige tu bebida primero';
+  if (!comboState.side)    return '🍟 Elige tu acompañamiento';
   if (!comboState.dessert) return '🍦 Elige el postre';
   return null;
 }
 
 function renderComboDialog() {
   const p = comboState.product;
+  const isSolo = comboState.mode === 'solo';
   const optLabel = opt => (state.lang === 'en' && opt.labelEn) ? opt.labelEn : opt.label;
+
+  const drinkPrice = d => {
+    const price = isSolo ? d.retail : d.extra;
+    if (d.id === 'none') return isSolo ? t('included') : t('included');
+    return price ? '+' + EUR.format(price) : t('included');
+  };
+  const sidePrice = s => {
+    const price = isSolo ? s.retail : s.extra;
+    if (s.id === 'none') return t('included');
+    return price ? '+' + EUR.format(price) : t('included');
+  };
 
   const drinkHtml = DRINKS_OPTIONS.map(d => `
     <button class="combo-opt ${comboState.drink?.id === d.id ? 'selected' : ''}" data-drink="${d.id}" type="button">
-      <img src="${d.img}" alt="${optLabel(d)}" onerror="this.style.opacity='.3'">
+      ${d.img ? `<img src="${d.img}" alt="${optLabel(d)}" onerror="this.style.opacity='.3'">` : `<span class="combo-opt-icon">${d.icon}</span>`}
       <div>
         <div class="combo-opt-label">${optLabel(d)}</div>
-        <div class="combo-opt-price">${d.extra ? '+' + EUR.format(d.extra) : t('included')}</div>
+        <div class="combo-opt-price">${drinkPrice(d)}</div>
       </div>
     </button>
   `).join('');
@@ -1720,7 +1799,7 @@ function renderComboDialog() {
       ${s.img ? `<img src="${s.img}" alt="${optLabel(s)}" onerror="this.style.display='none'">` : `<span class="combo-opt-icon">${s.icon}</span>`}
       <div>
         <div class="combo-opt-label">${optLabel(s)}</div>
-        <div class="combo-opt-price">${s.extra ? '+' + EUR.format(s.extra) : t('included')}</div>
+        <div class="combo-opt-price">${sidePrice(s)}</div>
       </div>
     </button>
   `).join('');
@@ -1750,17 +1829,17 @@ function renderComboDialog() {
       <div class="combo-desc">${pDesc(p)}</div>
 
       <div class="combo-section">
-        <h3>${t('chooseDrink')} <span class="combo-required">*</span></h3>
+        <h3>${t('chooseDrink')} ${!isSolo ? '<span class="combo-required">*</span>' : ''}</h3>
         <div class="combo-options">${drinkHtml}</div>
       </div>
 
       <div class="combo-section">
-        <h3>${t('chooseSide')} <span class="combo-required">*</span></h3>
+        <h3>${t('chooseSide')} ${!isSolo ? '<span class="combo-required">*</span>' : ''}</h3>
         <div class="combo-options">${sideHtml}</div>
       </div>
 
       <div class="combo-section">
-        <h3>${t('chooseDessert')} <span class="combo-required">*</span></h3>
+        <h3>${t('chooseDessert')} ${!isSolo ? '<span class="combo-required">*</span>' : ''}</h3>
         <div class="combo-options">${dessertHtml}</div>
       </div>
 
@@ -1835,9 +1914,9 @@ function renderComboDialog() {
   $('btnAddCombo').addEventListener('click', () => {
     if (!comboReady()) return;
     const note = [
-      `Bebida: ${comboState.drink.label}`,
-      comboState.side.id !== 'none' ? `Acomp: ${comboState.side.label}` : 'Sin acomp.',
-      comboState.dessert.id !== 'none' ? `Postre: ${comboState.dessert.label}` : ''
+      comboState.drink?.id !== 'none'    ? `Bebida: ${comboState.drink.label}` : '',
+      comboState.side?.id   !== 'none'   ? `Acomp: ${comboState.side.label}`   : '',
+      comboState.dessert?.id !== 'none'  ? `Postre: ${comboState.dessert.label}` : ''
     ].filter(Boolean).join(' · ');
 
     addToCart(comboState.product, comboState.mods, comboState.qty, note);
