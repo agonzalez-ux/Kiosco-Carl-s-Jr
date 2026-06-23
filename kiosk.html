@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta name="theme-color" content="#CC0000" />
   <title>Carl's Jr — Haz tu pedido</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -69,11 +69,11 @@
         <form id="loginForm" class="ls-form" novalidate>
           <label class="ls-field">
             <span data-i18n="lsNameLabel">Tu nombre</span>
-            <input id="loginName" type="text" placeholder="Ej. María" autocomplete="given-name" required />
+            <input id="loginName" type="text" placeholder="Ej. María" autocomplete="given-name" inputmode="text" enterkeyhint="next" required />
           </label>
           <label class="ls-field">
             <span data-i18n="lsEmailLabel">Email (para acumular puntos)</span>
-            <input id="loginEmail" type="email" placeholder="maria@email.com" autocomplete="email" required />
+            <input id="loginEmail" type="email" placeholder="maria@email.com" autocomplete="email" inputmode="email" enterkeyhint="done" required />
           </label>
           <button type="submit" class="btn-start ls-submit">
             <span class="btn-start-inner" data-i18n="lsSubmit">¡Entrar y sumar puntos! ⭐</span>
@@ -224,11 +224,11 @@
       <form id="registerForm" class="ls-form" novalidate>
         <label class="ls-field">
           <span data-i18n="rdName">Tu nombre</span>
-          <input id="rdNameInput" type="text" placeholder="Ej. María" autocomplete="given-name" required />
+          <input id="rdNameInput" type="text" placeholder="Ej. María" autocomplete="given-name" inputmode="text" enterkeyhint="next" required />
         </label>
         <label class="ls-field">
           <span data-i18n="rdEmail">Email</span>
-          <input id="rdEmailInput" type="email" placeholder="maria@email.com" autocomplete="email" required />
+          <input id="rdEmailInput" type="email" placeholder="maria@email.com" autocomplete="email" inputmode="email" enterkeyhint="done" required />
         </label>
         <button type="submit" class="btn-start ls-submit">
           <span class="btn-start-inner" data-i18n="rdSubmit">¡Registrarme y recibir ticket! ⭐</span>
