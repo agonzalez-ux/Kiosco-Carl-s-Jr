@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Carl's Jr — KDS Cocina</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -605,6 +605,83 @@
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #333; border-radius: 99px; }
+
+    /* ── TOUCH / TÓTEM ── */
+    button, .q-card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+    /* ── FORMATO TÓTEM (portrait) ── */
+    @media (orientation: portrait), (max-width: 700px) {
+
+      body { height: 100svh; height: 100vh; }
+
+      /* Header más compacto */
+      .kds-header { height: 52px; padding: 0 14px; }
+      .kds-logo img { height: 26px; }
+      .kds-logo-text { font-size: .8rem; }
+      .kds-clock { font-size: 1.2rem; }
+      .kds-orders-count-val { font-size: 1.1rem; }
+      .kds-demo-back { display: none; }
+
+      /* Main: cola arriba, pedido activo abajo */
+      .kds-main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+
+      /* Cola: franja horizontal desplazable */
+      .kds-queue {
+        border-right: none; border-bottom: 2px solid var(--border);
+        flex-direction: column; max-height: 220px;
+      }
+      .kds-queue-header { padding: 8px 14px; }
+      .kds-queue-list {
+        flex-direction: row; overflow-x: auto; overflow-y: hidden;
+        padding: 8px 10px; gap: 10px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Tarjetas de cola: horizontal compactas */
+      .q-card {
+        min-width: 160px; max-width: 160px; flex-shrink: 0;
+        padding: 10px;
+      }
+      .q-card-id { font-size: 1rem; }
+      .q-card-items { font-size: .72rem; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+      .q-card-btn { padding: 10px; font-size: .8rem; }
+
+      /* Pedido activo: columna única */
+      .active-card { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+
+      /* Detalles: scrollable */
+      .active-details { padding: 16px; gap: 14px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+      .active-order-num { font-size: 2.6rem; }
+      .active-photo { width: 72px; height: 72px; }
+      .active-photo-extra { width: 72px; height: 72px; }
+
+      /* Panel timer: horizontal en la parte de abajo */
+      .active-timer-panel {
+        border-left: none; border-top: 2px solid var(--border);
+        flex-direction: row; justify-content: space-between; align-items: center;
+        padding: 14px 20px; gap: 14px; flex-shrink: 0;
+      }
+      .timer-ring { width: 90px; height: 90px; }
+      .timer-display { font-size: 1.6rem; }
+      .timer-ring-wrap svg { width: 90px; height: 90px; }
+      .speed-bar-wrap { flex: 1; }
+      .timer-objective { display: none; }
+      .live-preview { padding: 8px 14px; }
+      .live-emoji { font-size: 1.4rem; }
+      .live-pts { font-size: 1.1rem; }
+
+      /* Botón completar: más grande para touch */
+      .btn-complete { padding: 18px; font-size: 1.2rem; border-radius: 10px; }
+
+      /* Empty state */
+      .active-empty-icon { font-size: 3.5rem; }
+      .active-empty h2 { font-size: 1.5rem; }
+
+      /* Ranking: más compacto */
+      .kds-ranking { padding: 6px 14px; }
+      .rank-chip { padding: 5px 10px; }
+      .rank-name { font-size: .75rem; }
+    }
   </style>
 </head>
 <body>
