@@ -27,6 +27,7 @@
 
 html { font-size: 16px; scroll-behavior: smooth; }
 html, body { width: 100%; height: 100%; overflow: hidden; }
+#kiosk-root { overflow: hidden; }
 
 /* Contenedor principal — llena el viewport del iframe */
 #kiosk-root {
@@ -62,7 +63,7 @@ a { -webkit-tap-highlight-color: transparent; }
 
 /* WELCOME */
 .welcome {
-  position: absolute; inset: 0; z-index: 100;
+  position: fixed; inset: 0; z-index: 100;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   background: var(--black);
@@ -599,7 +600,7 @@ a { -webkit-tap-highlight-color: transparent; }
 
 /* CART PANEL */
 .cart-overlay {
-  position: absolute; inset: 0; z-index: 59;
+  position: fixed; inset: 0; z-index: 59;
   background: rgba(0,0,0,.6); backdrop-filter: blur(2px);
 }
 .cart-panel {
@@ -921,7 +922,7 @@ a { -webkit-tap-highlight-color: transparent; }
 
 /* TOAST */
 .toast {
-  position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
   z-index: 200; background: var(--dark2); color: var(--white);
   border: 1.5px solid var(--dark3); border-radius: var(--radius);
   padding: 12px 24px; font-size: .9rem; font-weight: 600;
@@ -933,7 +934,7 @@ a { -webkit-tap-highlight-color: transparent; }
 
 /* CONFETTI */
 .confetti-canvas {
-  position: absolute; inset: 0; z-index: 300;
+  position: fixed; inset: 0; z-index: 300;
   pointer-events: none; width: 100%; height: 100%;
 }
 
