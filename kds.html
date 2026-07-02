@@ -1746,22 +1746,5 @@
     render();
   </script>
 </div><!-- /kiosk-root -->
-<script>
-  (function () {
-    var W = 1080, H = 1920;
-    function fit() {
-      var el = document.getElementById('kiosk-root');
-      if (!el) return;
-      var w = window.innerWidth  || document.documentElement.clientWidth;
-      var h = window.innerHeight || document.documentElement.clientHeight;
-      if (!w || !h) { requestAnimationFrame(fit); return; }
-      el.style.transform = 'scale(' + Math.min(w / W, h / H) + ')';
-    }
-    window.addEventListener('resize', fit);
-    window.addEventListener('load', fit);
-    if (document.readyState === 'complete') { fit(); }
-    else { document.addEventListener('DOMContentLoaded', fit); }
-  })();
-</script>
 </body>
 </html>
