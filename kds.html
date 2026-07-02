@@ -7,22 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <script>
-    (function () {
-      var W = 1080, H = 1920;
-      function fit() {
-        var s = Math.min(window.innerWidth / W, window.innerHeight / H);
-        var el = document.documentElement;
-        el.style.width  = W + 'px';
-        el.style.height = H + 'px';
-        el.style.transformOrigin = '0 0';
-        el.style.transform = 'scale(' + s + ')';
-        el.style.overflow = 'hidden';
-      }
-      fit();
-      window.addEventListener('resize', fit);
-    })();
-  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -701,6 +685,7 @@
   </style>
 </head>
 <body>
+<div id="kiosk-root">
 
   <!-- ── WORKER SELECTION MODAL ── -->
   <div id="workerModal" class="modal-backdrop">
@@ -1760,5 +1745,23 @@
     initWorkerModal();
     render();
   </script>
+</div><!-- /kiosk-root -->
+<script>
+  (function () {
+    var W = 1080, H = 1920;
+    function fit() {
+      var el = document.getElementById('kiosk-root');
+      if (!el) return;
+      var w = window.innerWidth  || document.documentElement.clientWidth;
+      var h = window.innerHeight || document.documentElement.clientHeight;
+      if (!w || !h) { requestAnimationFrame(fit); return; }
+      el.style.transform = 'scale(' + Math.min(w / W, h / H) + ')';
+    }
+    window.addEventListener('resize', fit);
+    window.addEventListener('load', fit);
+    if (document.readyState === 'complete') { fit(); }
+    else { document.addEventListener('DOMContentLoaded', fit); }
+  })();
+</script>
 </body>
 </html>
