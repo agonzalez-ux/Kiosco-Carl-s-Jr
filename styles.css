@@ -61,7 +61,7 @@ a { -webkit-tap-highlight-color: transparent; }
 
 /* WELCOME */
 .welcome {
-  position: fixed; inset: 0; z-index: 100;
+  position: absolute; inset: 0; z-index: 100;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   background: var(--black);
@@ -431,7 +431,7 @@ a { -webkit-tap-highlight-color: transparent; }
 
 /* FAB CARRITO */
 .fab-cart {
-  position: fixed; bottom: 24px; right: 20px; z-index: 45;
+  position: absolute; bottom: 24px; right: 20px; z-index: 45;
   background: var(--red);
   color: var(--white);
   border-radius: 999px; padding: 14px 22px;
@@ -598,12 +598,12 @@ a { -webkit-tap-highlight-color: transparent; }
 
 /* CART PANEL */
 .cart-overlay {
-  position: fixed; inset: 0; z-index: 59;
+  position: absolute; inset: 0; z-index: 59;
   background: rgba(0,0,0,.6); backdrop-filter: blur(2px);
 }
 .cart-panel {
-  position: fixed; top: 0; right: 0; bottom: 0; z-index: 60;
-  width: min(420px, 100vw);
+  position: absolute; top: 0; right: 0; bottom: 0; z-index: 60;
+  width: min(420px, 100%);
   background: var(--dark);
   display: flex; flex-direction: column;
   transform: translateX(100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
@@ -920,7 +920,7 @@ a { -webkit-tap-highlight-color: transparent; }
 
 /* TOAST */
 .toast {
-  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
   z-index: 200; background: var(--dark2); color: var(--white);
   border: 1.5px solid var(--dark3); border-radius: var(--radius);
   padding: 12px 24px; font-size: .9rem; font-weight: 600;
@@ -932,7 +932,7 @@ a { -webkit-tap-highlight-color: transparent; }
 
 /* CONFETTI */
 .confetti-canvas {
-  position: fixed; inset: 0; z-index: 300;
+  position: absolute; inset: 0; z-index: 300;
   pointer-events: none; width: 100%; height: 100%;
 }
 
