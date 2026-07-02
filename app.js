@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 /* ═══════════════════════════════════════════════════
    CARL'S JR — KIOSCO CLIENTE
@@ -785,9 +785,9 @@ function productCard(p) {
   const stars = '⭐'.repeat(p.stars) + (p.stars < 5 ? '<span style="opacity:.3">' + '⭐'.repeat(5 - p.stars) + '</span>' : '');
   const badgeHtml = p.badge ? `<div class="pc-badge ${p.badgeStyle || ''}">${p.badge}</div>` : '';
   const imgHtml = p.isMystery
-    ? `<img src="https://carlsjr.es/wp-content/uploads/2023/03/Western-Bacon-Cheeseburger.png" alt="Sorpresa" class="mystery-card-img"><div class="mystery-card-q">?</div>`
+    ? `<img referrerpolicy="no-referrer" src="https://carlsjr.es/wp-content/uploads/2023/03/Western-Bacon-Cheeseburger.png" alt="Sorpresa" class="mystery-card-img"><div class="mystery-card-q">?</div>`
     : p.img
-      ? `<img src="${p.img}" alt="${pName(p)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=pc-emoji>🍔</span>'">`
+      ? `<img referrerpolicy="no-referrer" src="${p.img}" alt="${pName(p)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=pc-emoji>🍔</span>'">`
       : `<span class="pc-emoji">🍔</span>`;
   return `
     <article class="product-card" data-product="${p.id}" role="button" tabindex="0" aria-label="${pName(p)}, ${EUR.format(p.price)}">
@@ -880,7 +880,7 @@ function renderProductDialog(p) {
 
   $('pdContent').innerHTML = `
     <div class="pd-hero">
-      ${p.img ? `<img src="${p.img}" alt="${pName(p)}" onerror="this.style.display='none'">` : `<span style="font-size:5rem">🍔</span>`}
+      ${p.img ? `<img referrerpolicy="no-referrer" src="${p.img}" alt="${pName(p)}" onerror="this.style.display='none'">` : `<span style="font-size:5rem">🍔</span>`}
     </div>
     <div class="pd-body">
       <div class="pd-category">${t(CAT_LABEL_KEYS[p.cat]) || p.cat}</div>
@@ -1052,7 +1052,7 @@ function renderCart() {
     return `
       <div class="cart-line">
         ${item.img
-          ? `<img class="cl-img" src="${item.img}" alt="${itemName}" onerror="this.className='cl-emoji';this.outerHTML='<div class=cl-emoji>🍔</div>'">`
+          ? `<img referrerpolicy="no-referrer" class="cl-img" src="${item.img}" alt="${itemName}" onerror="this.className='cl-emoji';this.outerHTML='<div class=cl-emoji>🍔</div>'">`
           : `<div class="cl-emoji">🍔</div>`}
         <div class="cl-body">
           <div class="cl-name">${itemName}</div>
@@ -1120,7 +1120,7 @@ function renderCartUpsell() {
     <div class="cu-items">
       ${toShow.map(p => `
         <div class="cu-item" data-upsell-add="${p.id}" role="button" tabindex="0">
-          <img src="${p.img}" alt="${pName(p)}" onerror="this.style.display='none'">
+          <img referrerpolicy="no-referrer" src="${p.img}" alt="${pName(p)}" onerror="this.style.display='none'">
           <div class="cu-item-body">
             <div class="cu-item-name">${pName(p)}</div>
             <div class="cu-item-price">${EUR.format(p.price)}</div>
@@ -1381,7 +1381,7 @@ function qrCard(p, isTop, customLabel = null) {
   const label = customLabel || (isTop ? t('quizTop') : t('quizAlso'));
   return `
     <div class="qr-card ${isTop ? 'top' : ''}">
-      <img src="${p.img}" alt="${pName(p)}" onerror="this.style.display='none'">
+      <img referrerpolicy="no-referrer" src="${p.img}" alt="${pName(p)}" onerror="this.style.display='none'">
       <div class="qr-card-body">
         <div class="qr-card-label">${label}</div>
         <h4>${pName(p)}</h4>
@@ -1690,7 +1690,7 @@ function openMysteryConfigurator(product) {
 
   const drinkHtml = DRINKS_OPTIONS.map(d => `
     <button class="combo-opt ${comboState.drink?.id === d.id ? 'selected' : ''}" data-drink="${d.id}" type="button">
-      <img src="${d.img}" alt="${optLabel(d)}" onerror="this.style.opacity='.3'">
+      <img referrerpolicy="no-referrer" src="${d.img}" alt="${optLabel(d)}" onerror="this.style.opacity='.3'">
       <div>
         <div class="combo-opt-label">${optLabel(d)}</div>
         <div class="combo-opt-price">${d.extra ? '+' + EUR.format(d.extra) : t('included')}</div>
@@ -1700,7 +1700,7 @@ function openMysteryConfigurator(product) {
 
   $('comboContent').innerHTML = `
     <div class="combo-hero mystery-hero">
-      <img class="mystery-hero-img" src="https://carlsjr.es/wp-content/uploads/2023/03/Western-Bacon-Cheeseburger.png" alt="Sorpresa" onerror="this.style.display='none'">
+      <img referrerpolicy="no-referrer" class="mystery-hero-img" src="https://carlsjr.es/wp-content/uploads/2023/03/Western-Bacon-Cheeseburger.png" alt="Sorpresa" onerror="this.style.display='none'">
       <div class="mystery-hero-q">?</div>
     </div>
     <div class="combo-body">
@@ -1810,7 +1810,7 @@ function renderComboDialog() {
 
   const drinkHtml = DRINKS_OPTIONS.map(d => `
     <button class="combo-opt ${comboState.drink?.id === d.id ? 'selected' : ''}" data-drink="${d.id}" type="button">
-      ${d.img ? `<img src="${d.img}" alt="${optLabel(d)}" onerror="this.style.opacity='.3'">` : `<span class="combo-opt-icon">${d.icon}</span>`}
+      ${d.img ? `<img referrerpolicy="no-referrer" src="${d.img}" alt="${optLabel(d)}" onerror="this.style.opacity='.3'">` : `<span class="combo-opt-icon">${d.icon}</span>`}
       <div>
         <div class="combo-opt-label">${optLabel(d)}</div>
         <div class="combo-opt-price">${drinkPrice(d)}</div>
@@ -1820,7 +1820,7 @@ function renderComboDialog() {
 
   const sideHtml = SIDES_OPTIONS.map(s => `
     <button class="combo-opt ${comboState.side?.id === s.id ? 'selected' : ''}" data-side="${s.id}" type="button">
-      ${s.img ? `<img src="${s.img}" alt="${optLabel(s)}" onerror="this.style.display='none'">` : `<span class="combo-opt-icon">${s.icon}</span>`}
+      ${s.img ? `<img referrerpolicy="no-referrer" src="${s.img}" alt="${optLabel(s)}" onerror="this.style.display='none'">` : `<span class="combo-opt-icon">${s.icon}</span>`}
       <div>
         <div class="combo-opt-label">${optLabel(s)}</div>
         <div class="combo-opt-price">${sidePrice(s)}</div>
@@ -1830,7 +1830,7 @@ function renderComboDialog() {
 
   const dessertHtml = DESSERT_OPTIONS.map(d => `
     <button class="combo-opt ${comboState.dessert?.id === d.id ? 'selected' : ''}" data-dessert="${d.id}" type="button">
-      ${d.img ? `<img src="${d.img}" alt="${optLabel(d)}" onerror="this.style.opacity='.3'">` : `<span class="combo-opt-icon">${d.icon}</span>`}
+      ${d.img ? `<img referrerpolicy="no-referrer" src="${d.img}" alt="${optLabel(d)}" onerror="this.style.opacity='.3'">` : `<span class="combo-opt-icon">${d.icon}</span>`}
       <div>
         <div class="combo-opt-label">${optLabel(d)}</div>
         <div class="combo-opt-price">${d.extra ? '+' + EUR.format(d.extra) : t('included')}</div>
@@ -1846,7 +1846,7 @@ function renderComboDialog() {
 
   $('comboContent').innerHTML = `
     <div class="combo-hero">
-      ${p.img ? `<img src="${p.img}" alt="${pName(p)}">` : `<span style="font-size:5rem">🍔</span>`}
+      ${p.img ? `<img referrerpolicy="no-referrer" src="${p.img}" alt="${pName(p)}">` : `<span style="font-size:5rem">🍔</span>`}
     </div>
     <div class="combo-body">
       <div class="combo-name" id="comboTitle">${pName(p)}</div>
@@ -2063,3 +2063,4 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
 }
+

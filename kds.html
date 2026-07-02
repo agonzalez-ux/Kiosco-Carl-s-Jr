@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -740,7 +740,7 @@
   <!-- ── HEADER ── -->
   <header class="kds-header">
     <div class="kds-logo">
-      <img src="https://carlsjr.es/wp-content/uploads/2023/03/Carls-Jr-Logo-1.png" alt="Carl's Jr" onerror="this.style.display='none'" />
+      <img referrerpolicy="no-referrer" src="https://carlsjr.es/wp-content/uploads/2023/03/Carls-Jr-Logo-1.png" alt="Carl's Jr" onerror="this.style.display='none'" />
       <div>
         <div class="kds-logo-text">Carl's Jr</div>
         <div class="kds-logo-sub">Kitchen Display</div>
@@ -1213,9 +1213,9 @@
       const photos     = order.items.filter(i => i.img).slice(0, 3);
       const photoHtml  = photos.length ? `
         <div class="active-photo-row">
-          ${photos[0]?.img ? `<img class="active-photo" src="${photos[0].img}" alt="" onerror="this.style.opacity='.2'">` : ''}
-          ${photos[1]?.img ? `<img class="active-photo-extra" src="${photos[1].img}" alt="" onerror="this.style.opacity='.2'">` : ''}
-          ${photos[2]?.img ? `<img class="active-photo-extra" src="${photos[2].img}" alt="" onerror="this.style.opacity='.2'">` : ''}
+          ${photos[0]?.img ? `<img referrerpolicy="no-referrer" class="active-photo" src="${photos[0].img}" alt="" onerror="this.style.opacity='.2'">` : ''}
+          ${photos[1]?.img ? `<img referrerpolicy="no-referrer" class="active-photo-extra" src="${photos[1].img}" alt="" onerror="this.style.opacity='.2'">` : ''}
+          ${photos[2]?.img ? `<img referrerpolicy="no-referrer" class="active-photo-extra" src="${photos[2].img}" alt="" onerror="this.style.opacity='.2'">` : ''}
         </div>
       ` : '';
 
@@ -1257,7 +1257,7 @@
 
         return `
           <div class="active-item">
-            <img class="active-item-img" src="${item.img || ''}" alt="" onerror="this.style.opacity='.15'">
+            <img referrerpolicy="no-referrer" class="active-item-img" src="${item.img || ''}" alt="" onerror="this.style.opacity='.15'">
             <div class="active-item-body">
               <span class="active-item-qty">${item.qty || 1}×</span>
               <div class="active-item-name">${item.name}</div>
@@ -1748,3 +1748,4 @@
 </div><!-- /kiosk-root -->
 </body>
 </html>
+

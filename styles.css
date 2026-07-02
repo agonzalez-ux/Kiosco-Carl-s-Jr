@@ -1163,6 +1163,18 @@ input, select, textarea {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+/* Centering for both showModal() and show() fallback */
+dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 dialog::backdrop {
   touch-action: none;
 }
