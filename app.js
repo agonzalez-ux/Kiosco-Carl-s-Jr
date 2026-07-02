@@ -6,6 +6,30 @@
 
 const EUR = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
 
+/* ─── IFRAME-SAFE MODAL ─── */
+function safeModal(dialog) {
+  try {
+    dialog.showModal();
+  } catch (e) {
+    // Fallback for iframes without allow-modals (e.g. Admira player)
+    let bd = dialog._bd;
+    if (!bd) {
+      bd = document.createElement('div');
+      bd.className = 'modal-bd';
+      bd.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:998;';
+      bd.addEventListener('click', () => safeClose(dialog));
+      dialog._bd = bd;
+    }
+    if (!bd.isConnected) document.body.insertBefore(bd, dialog);
+    dialog.style.zIndex = '999';
+    dialog.show();
+  }
+}
+function safeClose(dialog) {
+  dialog.close();
+  if (dialog._bd && dialog._bd.isConnected) dialog._bd.remove();
+}
+
 /* ─── PRODUCTOS (reales de carlsjr.es) ─── */
 const PRODUCTS = [
   /* HAMBURGUESAS */
@@ -788,8 +812,8 @@ let dialogMods = [];
 let dialogProduct = null;
 
 function bindProductDialog() {
-  $('pdClose').addEventListener('click', () => $('productDialog').close());
-  $('productDialog').addEventListener('click', e => { if (e.target === $('productDialog')) $('productDialog').close(); });
+  $('pdClose').addEventListener('click', () => safeClose($('productDialog')));
+  $('productDialog').addEventListener('click', e => { if (e.target === $('productDialog')) safeClose($('productDialog')); });
 }
 
 function openDrinkPicker(p) {
@@ -828,9 +852,9 @@ function openDrinkPicker(p) {
     if (!chosenVariant) return;
     const label = (isCoffee ? COFFEE_OPTIONS : DRINKS_OPTIONS).find(o => o.id === chosenVariant)?.label || chosenVariant;
     addToCart(p, [], dialogQty, label);
-    $('productDialog').close();
+    safeClose($('productDialog'));
   };
-  $('productDialog').showModal();
+  safeModal($('productDialog'));
 }
 
 function openProduct(id) {
@@ -844,7 +868,7 @@ function openProduct(id) {
   dialogQty = 1;
   dialogMods = [];
   renderProductDialog(p);
-  $('productDialog').showModal();
+  safeModal($('productDialog'));
   // Scroll dialog to top
   setTimeout(() => $('productDialog').scrollTop = 0, 10);
 }
@@ -922,7 +946,7 @@ function renderProductDialog(p) {
 
   $('btnAddCart').addEventListener('click', () => {
     addToCart(dialogProduct, dialogMods, dialogQty);
-    $('productDialog').close();
+    safeClose($('productDialog'));
     dialogProduct = null;
   });
 }
@@ -1371,8 +1395,8 @@ function qrCard(p, isTop, customLabel = null) {
 
 /* ─── CHECKOUT ─── */
 function bindComboDialog() {
-  $('comboClose').addEventListener('click', () => $('comboDialog').close());
-  $('comboDialog').addEventListener('click', e => { if (e.target === $('comboDialog')) $('comboDialog').close(); });
+  $('comboClose').addEventListener('click', () => safeClose($('comboDialog')));
+  $('comboDialog').addEventListener('click', e => { if (e.target === $('comboDialog')) safeClose($('comboDialog')); });
 }
 
 function bindCheckout() {
@@ -1380,11 +1404,11 @@ function bindCheckout() {
     renderPaymentGrid();
     $('checkoutPayment').hidden = false;
     $('checkoutSuccess').hidden = true;
-    $('checkoutDialog').showModal();
+    safeModal($('checkoutDialog'));
     closeCart();
   });
   $('btnCancelCheckout').addEventListener('click', () => {
-    $('checkoutDialog').close();
+    safeClose($('checkoutDialog'));
     openCart();
   });
   $('btnPay').addEventListener('click', confirmPayment);
@@ -1498,7 +1522,7 @@ function confirmPayment() {
       </div>
     `;
     $('btnTicketRegister').addEventListener('click', () => {
-      $('registerDialog').showModal();
+      safeModal($('registerDialog'));
     });
   }
 
@@ -1718,11 +1742,11 @@ function openMysteryConfigurator(product) {
   $('btnAddCombo').addEventListener('click', () => {
     const note = `Bebida: ${comboState.drink.label} · 🎲 Sorpresa`;
     addToCart(comboState.product, [], comboState.qty, note);
-    $('comboDialog').close();
+    safeClose($('comboDialog'));
     showToast(t('mysteryRevealed'));
   });
 
-  $('comboDialog').showModal();
+  safeModal($('comboDialog'));
 }
 
 function openComboConfigurator(product, mode = 'combo') {
@@ -1735,7 +1759,7 @@ function openComboConfigurator(product, mode = 'combo') {
     mods: [], qty: 1
   };
   renderComboDialog();
-  $('comboDialog').showModal();
+  safeModal($('comboDialog'));
 }
 
 function optPrice(opt, field) {
@@ -1920,7 +1944,7 @@ function renderComboDialog() {
     ].filter(Boolean).join(' · ');
 
     addToCart(comboState.product, comboState.mods, comboState.qty, note);
-    $('comboDialog').close();
+    safeClose($('comboDialog'));
   });
 }
 
@@ -2009,8 +2033,8 @@ function bindLangSwitcher() {
 function bindRegisterDialog() {
   const dialog = $('registerDialog');
   if (!dialog) return;
-  $('rdClose').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+  $('rdClose').addEventListener('click', () => safeClose(dialog));
+  dialog.addEventListener('click', e => { if (e.target === dialog) safeClose(dialog); });
 
   $('registerForm').addEventListener('submit', e => {
     e.preventDefault();
@@ -2020,7 +2044,7 @@ function bindRegisterDialog() {
     state.userName = name;
     state.isGuest = false;
     $('pointsDisplay').classList.remove('hidden');
-    dialog.close();
+    safeClose(dialog);
     showToast(t('toastRegistered'));
     // Update ticket box to show confirmation
     const box = $('ticketDigitalBox');

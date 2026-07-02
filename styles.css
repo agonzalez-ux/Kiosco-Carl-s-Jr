@@ -30,12 +30,14 @@
 
 html { font-size: 16px; scroll-behavior: smooth; }
 
+/* When fit-to-screen JS is active, html is fixed at 1080×1920 — body fills it */
 body {
   font-family: var(--font);
   background: var(--black);
   color: var(--white);
+  width: 100%;
   min-height: 100vh;
-  min-height: 100vh; min-height: 100dvh;
+  min-height: 100dvh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   user-select: none;
@@ -1062,10 +1064,83 @@ a { -webkit-tap-highlight-color: transparent; }
   .product-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 8px; }
   .pc-img { height: 145px; }
 }
+
+/* ─── KIOSKO 1080px (pantalla táctil portrait) ─── */
 @media (min-width: 900px) {
-  .product-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
-  .pc-img { height: 200px; }
+  :root {
+    --topbar-h: 80px;
+    --catnav-h: 80px;
+  }
+
+  /* Topbar */
+  .topbar { padding: 0 28px; }
+  .topbar-logo-img { height: 52px; }
+  .topbar-logo-text { font-size: 1.5rem; }
+  .topbar-points { font-size: 1.05rem; padding: 8px 20px; }
+  .topbar-demo-back { font-size: .75rem; padding: 6px 13px; }
+
+  /* Category nav */
+  .cat-nav { padding: 0 16px; gap: 12px; }
+  .cat-tab { font-size: .95rem; padding: 12px 24px; }
+  .cat-tab .cat-icon { font-size: 1.6rem; }
+  .cat-nav-ai { font-size: 1rem; padding: 12px 24px; }
+
+  /* Welcome */
+  .welcome-content { max-width: 700px; gap: 28px; padding: 48px 32px; }
+  .welcome-logo { width: 160px; }
+  .welcome-eyebrow { font-size: 1.2rem; }
+  .welcome-title { font-size: clamp(3.5rem, 7vw, 5rem); }
+  .welcome-slider { height: min(420px, 50vw); }
+  .ws-slide { width: min(380px, 50vw); }
+  .btn-start-inner { font-size: 1.9rem; padding: 24px 72px; }
+  .btn-guest { font-size: 1.1rem; padding: 18px 40px; }
+
+  /* Product grid — 3 columnas a 1080px */
+  .product-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px; }
+  .pc-img { height: 240px; }
+  .pc-name { font-size: 1.1rem; }
+  .pc-desc { font-size: .85rem; }
+  .pc-price { font-size: 1.35rem; }
+  .pc-add { width: 44px; height: 44px; font-size: 1.4rem; }
+  .pc-body { padding: 14px 16px 16px; gap: 8px; }
+
+  /* Daily challenge */
+  .daily-challenge { margin: 16px 20px 0; padding: 18px 24px; }
+  .dc-icon { font-size: 2.4rem; }
+  .dc-text { font-size: 1rem; }
+
+  /* FAB cart */
+  .fab-cart { bottom: 36px; right: 32px; padding: 18px 32px; font-size: 1.15rem; }
+  .fab-cart-icon { font-size: 1.5rem; }
+
+  /* Product dialog */
+  .product-dialog { width: min(640px, 95vw); max-height: 92vh; max-height: 92dvh; }
   .pd-hero { height: 360px; }
+
+  /* Combo dialog */
+  .combo-dialog { width: min(700px, 96vw); }
+
+  /* Checkout dialog */
+  .checkout-dialog { width: min(600px, 96vw); }
+
+  /* Register dialog */
+  .register-dialog { width: min(500px, 96vw); }
+
+  /* Cart panel */
+  .cart-panel { width: min(500px, 100vw); }
+
+  /* Login screen */
+  .ls-card { width: min(520px, 92vw); padding: 40px 36px; }
+  .ls-title { font-size: 2.2rem; }
+  .ls-field input { font-size: 1.1rem; padding: 18px 20px; }
+  .ls-qr { width: 200px; height: 200px; }
+
+  /* Upsell */
+  .upsell-banner { margin: 12px 20px 20px; }
+  .upsell-inner { padding: 18px 24px; }
+  .upsell-copy strong { font-size: 1.1rem; }
+  .upsell-copy p { font-size: .9rem; }
+  .upsell-action { font-size: 1rem; padding: 14px 22px; }
 }
 
 /* ─── TOUCH SCREEN KIOSK ─── */
