@@ -181,18 +181,6 @@
       transition: transform .3s, box-shadow .3s;
     }
 
-    /* Pending */
-    .order-card.pending {
-      border-color: var(--yellow);
-      box-shadow: 0 0 18px -4px rgba(255,200,44,.25);
-      animation: pulse-yellow 2.4s ease-in-out infinite;
-    }
-
-    @keyframes pulse-yellow {
-      0%, 100% { box-shadow: 0 0 18px -4px rgba(255,200,44,.25); }
-      50%       { box-shadow: 0 0 32px 2px  rgba(255,200,44,.45); }
-    }
-
     /* Preparing */
     .order-card.preparing {
       border-color: var(--red);
@@ -257,7 +245,6 @@
       letter-spacing: -2px;
     }
 
-    .order-number.pending   { color: var(--yellow); }
     .order-number.preparing { color: var(--red); }
     .order-number.ready     { color: var(--green); }
 
@@ -304,7 +291,6 @@
       margin-bottom: 14px;
     }
 
-    .status-label.pending   { color: var(--yellow); }
     .status-label.preparing { color: #ff6600; }
     .status-label.ready     { color: var(--green); font-size: 15px; }
 
@@ -323,7 +309,6 @@
       transition: width 0.8s cubic-bezier(.4,0,.2,1), background-color 0.6s ease;
     }
 
-    .progress-bar.pending   { width: 33%; background: var(--yellow); }
     .progress-bar.preparing { width: 66%; background: var(--red); animation: bar-glow-red 1s ease-in-out infinite alternate; }
     .progress-bar.ready     { width: 100%; background: var(--green); }
 
@@ -463,15 +448,19 @@ function filterOrders(orders) {
     if (o.status === 'ready') {
       return (now - o.timestamp) < READY_TTL;
     }
-    return ['pending', 'preparing'].includes(o.status);
+    return o.status === 'preparing';
   });
 }
 
-function elapsed(ts) {
-  const diff = Math.floor((Date.now() - ts) / 1000);
-  if (diff < 60)  return `hace ${diff}s`;
-  if (diff < 3600) return `hace ${Math.floor(diff/60)} min`;
-  return `hace ${Math.floor(diff/3600)}h`;
+const PREP_SECS = 5 * 60; // tiempo estimado de preparación
+
+function eta(order) {
+  if (order.status === 'ready') return '¡A recoger!';
+  const elapsed = Math.floor((Date.now() - order.timestamp) / 1000);
+  const remaining = PREP_SECS - elapsed;
+  if (remaining <= 30)  return '¡En seguida!';
+  if (remaining <= 90)  return '~1 min';
+  return `~${Math.ceil(remaining / 60)} min`;
 }
 
 function sig(orders) {
@@ -480,7 +469,6 @@ function sig(orders) {
 
 /* ── STATUS META ── */
 function statusMeta(status) {
-  if (status === 'pending')   return { icon: '🕐', label: 'En cola — pronto en cocina' };
   if (status === 'preparing') return { icon: '🔥', label: '¡Lo estamos preparando!' };
   if (status === 'ready')     return { icon: '⭐', label: '¡LISTO! Ve a recoger tu pedido' };
   return { icon: '❓', label: status };
@@ -511,7 +499,7 @@ function renderCard(order) {
       <div class="card-top">
         <div class="order-number ${order.status}">#${order.id}</div>
         <div class="card-meta">
-          <span class="time-elapsed">${elapsed(order.timestamp)}</span>
+          <span class="time-elapsed">${eta(order)}</span>
           <span class="status-icon ${order.status}" aria-hidden="true">${meta.icon}</span>
         </div>
       </div>
@@ -529,7 +517,7 @@ function refresh() {
   const newSig  = sig(orders);
 
   // Always update elapsed times (soft refresh every poll)
-  updateElapsed(orders);
+  updateEta(orders);
 
   if (newSig === lastSig) return;
   lastSig = newSig;
@@ -549,9 +537,7 @@ function refresh() {
 
   header.textContent = readyCount
     ? `🟢 ${readyCount} pedido${readyCount > 1 ? 's' : ''} listo${readyCount > 1 ? 's' : ''} — ¡pasa a recoger!`
-    : preparingCount
-      ? `🔥 Cocinando ${preparingCount} pedido${preparingCount > 1 ? 's' : ''}...`
-      : `📋 ${orders.length} pedido${orders.length > 1 ? 's' : ''} en cola`;
+    : `🔥 Cocinando ${preparingCount} pedido${preparingCount > 1 ? 's' : ''}...`;
 
   board.innerHTML = `<div class="orders-grid">${orders.map(renderCard).join('')}</div>`;
 
@@ -562,12 +548,12 @@ function refresh() {
   prevReadyIds = currentReadyIds;
 }
 
-function updateElapsed(orders) {
+function updateEta(orders) {
   orders.forEach(o => {
     const card = document.querySelector(`.order-card[data-id="${o.id}"]`);
     if (card) {
       const el = card.querySelector('.time-elapsed');
-      if (el) el.textContent = elapsed(o.timestamp);
+      if (el) el.textContent = eta(o);
     }
   });
 }
