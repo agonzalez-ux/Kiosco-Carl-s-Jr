@@ -969,12 +969,18 @@
       return 'late';
     }
 
+    /* ── SHARED ORDER NUMBER (1-200, same counter as kiosk) ── */
+    function nextOrderNum() {
+      const n = (parseInt(localStorage.getItem('cj-order-num') || '0', 10) % 200) + 1;
+      localStorage.setItem('cj-order-num', String(n));
+      return n;
+    }
+
     /* ── DEMO ORDERS ── */
     function addDemoOrder() {
       const orders = getOrders();
       const idx = Math.floor(Math.random() * DEMO_ITEMS.length);
-      const id = `D${String(Date.now()).slice(-4)}`;
-      orders.push({ id, items: DEMO_ITEMS[idx], timestamp: Date.now(), status: 'pending' });
+      orders.push({ id: nextOrderNum(), items: DEMO_ITEMS[idx], timestamp: Date.now(), status: 'pending' });
       saveOrders(orders);
       render();
     }

@@ -1442,11 +1442,18 @@ function renderPaymentGrid() {
 
 let activeCountdownTimer = null;
 
-function pushOrderToKDS(orderId, cartSnapshot) {
+function nextOrderNum() {
+  const n = (parseInt(localStorage.getItem('cj-order-num') || '0', 10) % 200) + 1;
+  localStorage.setItem('cj-order-num', String(n));
+  return n;
+}
+
+function pushOrderToKDS(cartSnapshot) {
   try {
+    const num = nextOrderNum();
     const orders = JSON.parse(localStorage.getItem('cj-kds-orders') || '[]');
     orders.push({
-      id: orderId,
+      id: num,
       timestamp: Date.now(),
       status: 'pending',
       items: cartSnapshot.map(i => {
@@ -1455,11 +1462,12 @@ function pushOrderToKDS(orderId, cartSnapshot) {
           const m = MODIFIERS.find(m => m.id === id);
           return m ? modLabel(m) : null;
         }).filter(Boolean);
-        return { name: prod ? pName(prod) : i.name, qty: i.qty, mods: modLabels };
+        return { name: prod ? pName(prod) : i.name, qty: i.qty, mods: modLabels, img: prod?.img || null };
       })
     });
     localStorage.setItem('cj-kds-orders', JSON.stringify(orders));
-  } catch(e) {}
+    return num;
+  } catch(e) { return null; }
 }
 
 function confirmPayment() {
@@ -1467,13 +1475,12 @@ function confirmPayment() {
   const { total } = cartSummary();
   const pts = Math.round(total * 10);
   addPoints(pts);
-  const orderId = 'CJ-' + Date.now().toString(36).toUpperCase().slice(-6);
-  pushOrderToKDS(orderId, cartSnapshot);
+  const orderNum = pushOrderToKDS(cartSnapshot);
 
   if ($('orderPlacedTitle')) $('orderPlacedTitle').textContent = t('orderPlaced');
   if ($('newOrderLabel')) $('newOrderLabel').textContent = t('newOrder');
 
-  $('successOrderId').textContent = `#${orderId}`;
+  $('successOrderId').textContent = `#${orderNum}`;
   $('successPointsRow').hidden = state.isGuest;
   if (!state.isGuest) {
     $('successPointsRow').innerHTML = t('pointsEarned')(pts);
