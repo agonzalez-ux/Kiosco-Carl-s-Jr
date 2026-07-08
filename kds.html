@@ -1187,7 +1187,7 @@
       // Mark as preparing
       const orders = getOrders();
       const o = orders.find(o => o.id === order.id);
-      if (o) { o.status = 'preparing'; saveOrders(orders); }
+      if (o) { o.status = 'preparing'; o.preparingAt = Date.now(); saveOrders(orders); }
 
       activeOrderId  = order.id;
       activeStartTime = Date.now();

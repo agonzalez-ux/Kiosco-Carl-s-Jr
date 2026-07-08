@@ -452,12 +452,12 @@ function filterOrders(orders) {
   });
 }
 
-const PREP_SECS = 5 * 60; // tiempo estimado de preparación
+const PREP_SECS = 4 * 60; // tiempo estimado de preparación (4 min desde que cocina empieza)
 
 function eta(order) {
   if (order.status === 'ready') return '¡A recoger!';
-  const elapsed = Math.floor((Date.now() - order.timestamp) / 1000);
-  const remaining = PREP_SECS - elapsed;
+  const start = order.preparingAt || order.timestamp;
+  const remaining = PREP_SECS - Math.floor((Date.now() - start) / 1000);
   if (remaining <= 30)  return '¡En seguida!';
   if (remaining <= 90)  return '~1 min';
   return `~${Math.ceil(remaining / 60)} min`;
