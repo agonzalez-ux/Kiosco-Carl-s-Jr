@@ -1062,11 +1062,6 @@
         document.getElementById('workerModal').hidden = true;
         updateHeaderWorker();
         renderRanking();
-        // Seed initial orders and start auto-flow
-        addDemoOrder();
-        setTimeout(addDemoOrder, 1200);
-        startAutoDemoFlow();
-        startRivalSimulation();
         render();
       });
     }
