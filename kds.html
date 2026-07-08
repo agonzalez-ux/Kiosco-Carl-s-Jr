@@ -1628,8 +1628,20 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Storage events (new orders from kiosk)
+    // Storage events (new orders from kiosk — fires between tabs/windows)
     window.addEventListener('storage', e => { if (e.key === STORAGE_ORDERS) render(); });
+
+    // BroadcastChannel (fires between same-origin iframes in the same Admira page)
+    try {
+      new BroadcastChannel('cj-kds').onmessage = () => render();
+    } catch(e) {}
+
+    // Polling fallback — catches any case where neither mechanism fires
+    let _lastSig = '';
+    setInterval(() => {
+      const sig = getOrders().map(o => o.id + o.status).join(',');
+      if (sig !== _lastSig) { _lastSig = sig; render(); }
+    }, 3000);
 
     /* ── BREAK ── */
     (function() {

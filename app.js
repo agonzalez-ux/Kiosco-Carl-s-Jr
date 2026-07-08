@@ -1466,6 +1466,7 @@ function pushOrderToKDS(cartSnapshot) {
       })
     });
     localStorage.setItem('cj-kds-orders', JSON.stringify(orders));
+    try { new BroadcastChannel('cj-kds').postMessage({ type: 'new-order' }); } catch(e) {}
     return num;
   } catch(e) { return null; }
 }
