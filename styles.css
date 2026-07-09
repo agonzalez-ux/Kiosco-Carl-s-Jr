@@ -961,6 +961,30 @@ a { -webkit-tap-highlight-color: transparent; }
   pointer-events: none; width: 100%; height: 100%;
 }
 
+/* ATTRACT SCREEN */
+.attract-screen {
+  position: fixed; inset: 0; z-index: 400;
+  background: #000; cursor: pointer;
+}
+.attract-video {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+  display: block;
+}
+.attract-tap-hint {
+  position: absolute; bottom: 60px; left: 0; right: 0;
+  text-align: center;
+  font-family: var(--font-head); font-size: 1.6rem;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 2px 16px rgba(0,0,0,.8);
+  animation: attract-pulse 2s ease-in-out infinite;
+}
+@keyframes attract-pulse {
+  0%, 100% { opacity: .5; transform: translateY(0); }
+  50%       { opacity: 1;  transform: translateY(-6px); }
+}
+
 /* EMPTY STATE */
 .empty-state {
   grid-column: 1/-1; text-align: center; padding: 48px 20px;

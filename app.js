@@ -2115,3 +2115,65 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
+/* ─── ATTRACT MODE ─── */
+(function() {
+  const IDLE_MS  = 30_000; // 30 s sin interacción en pantalla de bienvenida
+  const VIDEOS   = ['./promo1.mp4', './promo2.mp4'];
+  let idleTimer  = null;
+  let videoIdx   = 0;
+  const screen   = $('attractScreen');
+  const video    = $('attractVideo');
+  if (!screen || !video) return;
+
+  function isOnWelcome() {
+    const welcome = document.getElementById('welcome');
+    return welcome && !welcome.hidden && getComputedStyle(welcome).display !== 'none';
+  }
+
+  function showAttract() {
+    if (!isOnWelcome()) return;
+    video.src = VIDEOS[videoIdx % VIDEOS.length];
+    screen.hidden = false;
+    video.play().catch(() => {});
+  }
+
+  function hideAttract() {
+    screen.hidden = true;
+    video.pause();
+    video.src = '';
+    resetIdle();
+  }
+
+  function resetIdle() {
+    clearTimeout(idleTimer);
+    if (isOnWelcome()) {
+      idleTimer = setTimeout(showAttract, IDLE_MS);
+    }
+  }
+
+  // Al terminar un vídeo pasa al siguiente
+  video.addEventListener('ended', () => {
+    videoIdx++;
+    video.src = VIDEOS[videoIdx % VIDEOS.length];
+    video.play().catch(() => {});
+  });
+
+  // Tap sobre attract → vuelta al kiosco
+  screen.addEventListener('pointerdown', hideAttract);
+
+  // Cualquier interacción reinicia el contador
+  ['pointerdown', 'pointermove', 'keydown'].forEach(ev =>
+    document.addEventListener(ev, () => {
+      if (!screen.hidden) return; // ya en attract, lo gestiona hideAttract
+      resetIdle();
+    }, { passive: true })
+  );
+
+  // Arrancar cuando la welcome sea visible
+  const observer = new MutationObserver(resetIdle);
+  const welcome = document.getElementById('welcome');
+  if (welcome) observer.observe(welcome, { attributes: true, attributeFilter: ['hidden'] });
+
+  resetIdle();
+})();
+
