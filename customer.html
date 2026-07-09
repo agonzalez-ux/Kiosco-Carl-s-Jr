@@ -411,6 +411,9 @@
   <div id="board"></div>
 </main>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="./sync.js"></script>
 <script>
 'use strict';
 
@@ -627,7 +630,14 @@ window.addEventListener('resize', () => {
 });
 
 /* ── POLL ── */
-setInterval(() => refresh(), POLL_INTERVAL);
+/* ── SYNC ── */
+const _fbActive = CJSync.onOrdersChange(() => refresh());
+if (!_fbActive) {
+  // Fallback mismo dispositivo
+  window.addEventListener('storage', e => { if (e.key === STORAGE_KEY) refresh(); });
+  try { new BroadcastChannel('cj-kds').onmessage = () => refresh(); } catch(_) {}
+  setInterval(() => refresh(), POLL_INTERVAL);
+}
 
 /* ── INIT ── */
 refresh();

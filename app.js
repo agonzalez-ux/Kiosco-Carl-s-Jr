@@ -1442,15 +1442,8 @@ function renderPaymentGrid() {
 
 let activeCountdownTimer = null;
 
-function nextOrderNum() {
-  const n = (parseInt(localStorage.getItem('cj-order-num') || '0', 10) % 200) + 1;
-  localStorage.setItem('cj-order-num', String(n));
-  return n;
-}
-
-function pushOrderToKDS(cartSnapshot) {
+function pushOrderToKDS(cartSnapshot, num) {
   try {
-    const num = nextOrderNum();
     const orders = JSON.parse(localStorage.getItem('cj-kds-orders') || '[]');
     orders.push({
       id: num,
@@ -1465,10 +1458,8 @@ function pushOrderToKDS(cartSnapshot) {
         return { name: prod ? pName(prod) : i.name, qty: i.qty, mods: modLabels, img: prod?.img || null };
       })
     });
-    localStorage.setItem('cj-kds-orders', JSON.stringify(orders));
-    try { new BroadcastChannel('cj-kds').postMessage({ type: 'new-order' }); } catch(e) {}
-    return num;
-  } catch(e) { return null; }
+    CJSync.saveOrders(orders); // guarda en Firebase + localStorage
+  } catch(e) { console.warn('pushOrderToKDS error:', e); }
 }
 
 function confirmPayment() {
@@ -1476,8 +1467,15 @@ function confirmPayment() {
   const { total } = cartSummary();
   const pts = Math.round(total * 10);
   addPoints(pts);
-  const orderNum = pushOrderToKDS(cartSnapshot);
 
+  // Número atómico cross-device; toda la UI se actualiza en el callback
+  CJSync.nextOrderNum(orderNum => {
+    pushOrderToKDS(cartSnapshot, orderNum);
+    _showSuccessScreen(orderNum, pts, cartSnapshot, total);
+  });
+}
+
+function _showSuccessScreen(orderNum, pts, cartSnapshot, total) {
   if ($('orderPlacedTitle')) $('orderPlacedTitle').textContent = t('orderPlaced');
   if ($('newOrderLabel')) $('newOrderLabel').textContent = t('newOrder');
 

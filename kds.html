@@ -808,6 +808,9 @@
     <div class="kds-ranking-spacer"></div>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="./sync.js"></script>
   <script>
     'use strict';
 
@@ -894,7 +897,10 @@
     function getOrders() {
       try { return JSON.parse(localStorage.getItem(STORAGE_ORDERS) || '[]'); } catch { return []; }
     }
-    function saveOrders(orders) { localStorage.setItem(STORAGE_ORDERS, JSON.stringify(orders)); }
+    function saveOrders(orders) {
+      localStorage.setItem(STORAGE_ORDERS, JSON.stringify(orders));
+      CJSync.saveOrders(orders);
+    }
 
     function getWorkers() {
       try {
@@ -1623,21 +1629,6 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Storage events (new orders from kiosk — fires between tabs/windows)
-    window.addEventListener('storage', e => { if (e.key === STORAGE_ORDERS) render(); });
-
-    // BroadcastChannel (fires between same-origin iframes in the same Admira page)
-    try {
-      new BroadcastChannel('cj-kds').onmessage = () => render();
-    } catch(e) {}
-
-    // Polling fallback — catches any case where neither mechanism fires
-    let _lastSig = '';
-    setInterval(() => {
-      const sig = getOrders().map(o => o.id + o.status).join(',');
-      if (sig !== _lastSig) { _lastSig = sig; render(); }
-    }, 3000);
-
     /* ── BREAK ── */
     (function() {
       const fab    = document.getElementById('btnBreakFab');
@@ -1756,6 +1747,18 @@
 
     /* ── INIT ── */
     initWorkerModal();
+
+    // Sincronización cross-device via Firebase
+    const fbActive = CJSync.onOrdersChange(orders => {
+      try { localStorage.setItem(STORAGE_ORDERS, JSON.stringify(orders)); } catch(_) {}
+      if (!activeOrderId) render(); // solo re-renderizar si no hay pedido activo en pantalla
+    });
+    if (!fbActive) {
+      // Fallback mismo dispositivo
+      window.addEventListener('storage', e => { if (e.key === STORAGE_ORDERS) render(); });
+      try { new BroadcastChannel('cj-kds').onmessage = () => render(); } catch(_) {}
+    }
+
     render();
   </script>
 </div><!-- /kiosk-root -->
