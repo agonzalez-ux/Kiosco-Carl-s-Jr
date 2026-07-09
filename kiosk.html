@@ -239,6 +239,17 @@
     </div>
   </dialog>
 
+  <!-- Filtro SVG de nitidez para fotos del attract mode -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="sharpen" x="0" y="0" width="100%" height="100%" color-interpolation-filters="linearRGB">
+        <feConvolveMatrix order="3"
+          kernelMatrix="0 -0.6 0  -0.6 3.4 -0.6  0 -0.6 0"
+          divisor="1" bias="0" preserveAlpha="true"/>
+      </filter>
+    </defs>
+  </svg>
+
   <!-- ATTRACT MODE (vídeos promocionales en reposo) -->
   <div id="attractScreen" class="attract-screen" hidden aria-hidden="true">
     <video id="attractVideo" class="attract-video" muted playsinline preload="none"></video>
