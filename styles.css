@@ -974,12 +974,9 @@ a { -webkit-tap-highlight-color: transparent; }
 .attract-photo {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
-  object-fit: contain; object-position: center;
+  object-fit: cover; object-position: center;
   display: block;
-  background: #000;
   filter: url(#sharpen) contrast(1.08) saturate(1.1);
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: high-quality;
 }
 .attract-tap-hint {
   position: absolute; bottom: 60px; left: 0; right: 0;

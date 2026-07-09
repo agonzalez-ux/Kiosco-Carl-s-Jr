@@ -2118,7 +2118,7 @@ function showToast(msg) {
 /* ─── ATTRACT MODE ─── */
 (function() {
   const IDLE_MS    = 30_000;
-  const PHOTO_MS   = 6_000; // duración de cada foto
+  const PHOTO_MS   = 3_000; // duración de cada foto
 
   // Playlist: { type:'video'|'photo', src }
   const PLAYLIST = [
