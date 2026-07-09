@@ -1534,6 +1534,49 @@ function confirmPayment() {
     });
   }
 
+  // Construir recibo imprimible (oculto salvo @media print)
+  const existing = document.getElementById('print-receipt');
+  if (existing) existing.remove();
+  const receipt = document.createElement('div');
+  receipt.id = 'print-receipt';
+  receipt.style.cssText = 'display:none';
+  const receiptDate = new Date().toLocaleString('es-ES', { dateStyle:'short', timeStyle:'short' });
+  receipt.innerHTML = `
+    <div style="font-family:'Courier New',monospace;width:280px;color:#000;font-size:13px;line-height:1.5">
+      <div style="text-align:center;margin-bottom:12px">
+        <div style="font-size:22px;font-weight:900;letter-spacing:2px">CARL'S JR</div>
+        <div style="font-size:11px;color:#555">Bigger. Better. Burgers.</div>
+        <div style="font-size:11px;color:#555;margin-top:4px">${receiptDate}</div>
+      </div>
+      <div style="border-top:1px dashed #000;margin:8px 0"></div>
+      <div style="text-align:center;font-size:32px;font-weight:900;letter-spacing:1px;margin:8px 0">
+        PEDIDO #${orderNum}
+      </div>
+      <div style="border-top:1px dashed #000;margin:8px 0"></div>
+      ${cartSnapshot.map(i => {
+        const pr = productById(i.productId);
+        const name = pr ? pName(pr) : i.name;
+        const line = EUR.format(cartLineTotal(i));
+        return `<div style="display:flex;justify-content:space-between;margin:4px 0">
+          <span>${i.qty}× ${name}</span><span>${line}</span>
+        </div>`;
+      }).join('')}
+      <div style="border-top:1px dashed #000;margin:8px 0"></div>
+      <div style="display:flex;justify-content:space-between;font-weight:900;font-size:15px">
+        <span>TOTAL</span><span>${EUR.format(total)}</span>
+      </div>
+      <div style="border-top:1px dashed #000;margin:8px 0"></div>
+      ${!state.isGuest ? `<div style="text-align:center;font-size:11px;color:#555;margin-top:4px">+${pts} puntos acumulados ⭐</div>` : ''}
+      <div style="text-align:center;font-size:11px;color:#555;margin-top:12px">¡Gracias por tu visita!</div>
+    </div>`;
+  document.body.appendChild(receipt);
+
+  $('btnPrintTicket').onclick = () => {
+    receipt.style.cssText = '';
+    window.print();
+    receipt.style.cssText = 'display:none';
+  };
+
   $('checkoutPayment').hidden = true;
   $('checkoutSuccess').hidden = false;
   launchConfetti();

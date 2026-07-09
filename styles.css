@@ -597,6 +597,29 @@ a { -webkit-tap-highlight-color: transparent; }
   transition: background .15s;
 }
 .btn-ticket-register:hover { background: #1a1200; }
+.btn-print-ticket {
+  width: 100%; margin: 6px 0 0;
+  background: transparent; border: 1.5px solid #555;
+  color: #aaa; border-radius: var(--radius-sm);
+  padding: 11px 20px; font-weight: 700; font-size: .88rem;
+  transition: border-color .15s, color .15s;
+}
+.btn-print-ticket:hover { border-color: #fff; color: #fff; }
+
+/* PRINT TICKET */
+@media print {
+  body * { visibility: hidden !important; }
+  #print-receipt, #print-receipt * { visibility: visible !important; }
+  #print-receipt {
+    position: fixed !important;
+    inset: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    padding: 24px !important;
+    background: #fff !important;
+    z-index: 99999 !important;
+  }
+}
 
 /* CART PANEL */
 .cart-overlay {
