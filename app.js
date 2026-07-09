@@ -2121,14 +2121,13 @@ function showToast(msg) {
   const PHOTO_MS = 3_000;
   const VIDEO_FALLBACK_MS = 20_000; // máximo por vídeo por si 'ended' no llega
 
-  // Intercalado uniforme: vídeo → foto → vídeo → foto → vídeo → vídeo
   const PLAYLIST = [
     { type: 'video', src: './promo1.mp4' },
-    { type: 'photo', src: './promo1.jpg' },
-    { type: 'video', src: './promo2.mp4' },
-    { type: 'photo', src: './promo2.jpg' },
+    { type: 'photo', src: './promo2.jpg', ms: 6_000 },
     { type: 'video', src: './promo3.mp4' },
     { type: 'video', src: './promo4.mp4' },
+    { type: 'photo', src: './promo5.jpg', ms: 6_000 },
+    { type: 'video', src: './promo6.mp4' },
   ];
 
   let idleTimer     = null;
@@ -2165,7 +2164,7 @@ function showToast(msg) {
       video.pause();
       photo.src = item.src;
       photo.hidden = false;
-      slideTimer = setTimeout(nextItem, PHOTO_MS);
+      slideTimer = setTimeout(nextItem, item.ms || PHOTO_MS);
     }
   }
 
