@@ -2153,7 +2153,12 @@ function showToast(msg) {
       photo.hidden = true;
       video.hidden = false;
       video.src = item.src;
-      video.play().catch(() => nextItem()); // si falla el src, salta al siguiente
+      video.load();
+      const tryPlay = () => video.play().catch(() => {
+        // Reintenta una vez tras breve espera; si sigue fallando avanza
+        setTimeout(() => video.play().catch(() => nextItem()), 800);
+      });
+      video.readyState >= 3 ? tryPlay() : video.addEventListener('canplay', tryPlay, { once: true });
     } else {
       video.pause(); video.hidden = true;
       photo.src = item.src;
