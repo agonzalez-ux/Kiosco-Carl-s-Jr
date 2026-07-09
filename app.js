@@ -2154,10 +2154,11 @@ function showToast(msg) {
     if (item.type === 'video') {
       photo.hidden = true;
       video.style.display = 'block';
-      // Cambiar src + load dispara autoplay automáticamente (atributo autoplay en el elemento)
       video.src = item.src;
-      video.load();
-      // Fallback: si 'ended' no llega en VIDEO_FALLBACK_MS, avanzar igualmente
+      // play() directo sin load() previo — load() cancela la reproducción en algunos navegadores
+      const p = video.play();
+      if (p) p.catch(() => {}); // ignorar rechazo; el fallback timer avanza igualmente
+      // Fallback por si 'ended' no llega (vídeo corto, error de red, etc.)
       slideTimer = setTimeout(nextItem, VIDEO_FALLBACK_MS);
     } else {
       video.style.display = 'none';
@@ -2178,8 +2179,7 @@ function showToast(msg) {
     screen.hidden = true;
     clearTimeout(slideTimer);
     video.pause();
-    video.removeAttribute('src');
-    video.load();
+    video.src = '';
     video.style.display = 'block';
     photo.hidden = true;
     resetIdle();
