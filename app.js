@@ -2117,59 +2117,82 @@ function showToast(msg) {
 
 /* ─── ATTRACT MODE ─── */
 (function() {
-  const IDLE_MS  = 30_000; // 30 s sin interacción en pantalla de bienvenida
-  const VIDEOS   = ['./promo1.mp4', './promo2.mp4'];
-  let idleTimer  = null;
-  let videoIdx   = 0;
-  const screen   = $('attractScreen');
-  const video    = $('attractVideo');
-  if (!screen || !video) return;
+  const IDLE_MS    = 30_000;
+  const PHOTO_MS   = 6_000; // duración de cada foto
+
+  // Playlist: { type:'video'|'photo', src }
+  const PLAYLIST = [
+    { type: 'video', src: './promo1.mp4' },
+    { type: 'photo', src: './promo1.jpg' },
+    { type: 'video', src: './promo2.mp4' },
+    { type: 'video', src: './promo3.mp4' },
+    { type: 'photo', src: './promo2.jpg' },
+    { type: 'video', src: './promo4.mp4' },
+  ];
+
+  let idleTimer   = null;
+  let photoTimer  = null;
+  let idx         = 0;
+
+  const screen = $('attractScreen');
+  const video  = $('attractVideo');
+  const photo  = $('attractPhoto');
+  if (!screen || !video || !photo) return;
 
   function isOnWelcome() {
-    const welcome = document.getElementById('welcome');
-    return welcome && !welcome.hidden && getComputedStyle(welcome).display !== 'none';
+    const w = document.getElementById('welcome');
+    return w && !w.hidden;
   }
+
+  function playItem(i) {
+    idx = ((i % PLAYLIST.length) + PLAYLIST.length) % PLAYLIST.length;
+    const item = PLAYLIST[idx];
+    clearTimeout(photoTimer);
+
+    if (item.type === 'video') {
+      photo.hidden = true;
+      video.hidden = false;
+      video.src = item.src;
+      video.play().catch(() => nextItem()); // si falla el src, salta al siguiente
+    } else {
+      video.pause(); video.hidden = true;
+      photo.src = item.src;
+      photo.hidden = false;
+      photoTimer = setTimeout(() => nextItem(), PHOTO_MS);
+    }
+  }
+
+  function nextItem() { playItem(idx + 1); }
 
   function showAttract() {
     if (!isOnWelcome()) return;
-    video.src = VIDEOS[videoIdx % VIDEOS.length];
     screen.hidden = false;
-    video.play().catch(() => {});
+    playItem(idx);
   }
 
   function hideAttract() {
     screen.hidden = true;
-    video.pause();
-    video.src = '';
+    video.pause(); video.src = ''; video.hidden = false;
+    photo.hidden = true;
+    clearTimeout(photoTimer);
     resetIdle();
   }
 
   function resetIdle() {
     clearTimeout(idleTimer);
-    if (isOnWelcome()) {
-      idleTimer = setTimeout(showAttract, IDLE_MS);
-    }
+    if (isOnWelcome()) idleTimer = setTimeout(showAttract, IDLE_MS);
   }
 
-  // Al terminar un vídeo pasa al siguiente
-  video.addEventListener('ended', () => {
-    videoIdx++;
-    video.src = VIDEOS[videoIdx % VIDEOS.length];
-    video.play().catch(() => {});
-  });
-
-  // Tap sobre attract → vuelta al kiosco
+  video.addEventListener('ended', nextItem);
   screen.addEventListener('pointerdown', hideAttract);
 
-  // Cualquier interacción reinicia el contador
   ['pointerdown', 'pointermove', 'keydown'].forEach(ev =>
     document.addEventListener(ev, () => {
-      if (!screen.hidden) return; // ya en attract, lo gestiona hideAttract
+      if (!screen.hidden) return;
       resetIdle();
     }, { passive: true })
   );
 
-  // Arrancar cuando la welcome sea visible
   const observer = new MutationObserver(resetIdle);
   const welcome = document.getElementById('welcome');
   if (welcome) observer.observe(welcome, { attributes: true, attributeFilter: ['hidden'] });

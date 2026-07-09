@@ -971,6 +971,12 @@ a { -webkit-tap-highlight-color: transparent; }
   object-fit: cover; object-position: center;
   display: block;
 }
+.attract-photo {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+  display: block;
+}
 .attract-tap-hint {
   position: absolute; bottom: 60px; left: 0; right: 0;
   text-align: center;
