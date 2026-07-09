@@ -2117,22 +2117,23 @@ function showToast(msg) {
 
 /* ─── ATTRACT MODE ─── */
 (function() {
-  const IDLE_MS    = 30_000;
-  const PHOTO_MS   = 3_000; // duración de cada foto
+  const IDLE_MS  = 30_000;
+  const PHOTO_MS = 3_000;
+  const VIDEO_FALLBACK_MS = 20_000; // máximo por vídeo por si 'ended' no llega
 
-  // Playlist: { type:'video'|'photo', src }
+  // Intercalado uniforme: vídeo → foto → vídeo → foto → vídeo → vídeo
   const PLAYLIST = [
     { type: 'video', src: './promo1.mp4' },
     { type: 'photo', src: './promo1.jpg' },
     { type: 'video', src: './promo2.mp4' },
-    { type: 'video', src: './promo3.mp4' },
     { type: 'photo', src: './promo2.jpg' },
+    { type: 'video', src: './promo3.mp4' },
     { type: 'video', src: './promo4.mp4' },
   ];
 
-  let idleTimer   = null;
-  let photoTimer  = null;
-  let idx         = 0;
+  let idleTimer     = null;
+  let slideTimer    = null;
+  let idx           = 0;
 
   const screen = $('attractScreen');
   const video  = $('attractVideo');
@@ -2144,30 +2145,29 @@ function showToast(msg) {
     return w && !w.hidden;
   }
 
+  function nextItem() { playItem(idx + 1); }
+
   function playItem(i) {
     idx = ((i % PLAYLIST.length) + PLAYLIST.length) % PLAYLIST.length;
     const item = PLAYLIST[idx];
-    clearTimeout(photoTimer);
+    clearTimeout(slideTimer);
 
     if (item.type === 'video') {
       photo.hidden = true;
-      video.hidden = false;
+      video.style.display = 'block';
+      // Cambiar src + load dispara autoplay automáticamente (atributo autoplay en el elemento)
       video.src = item.src;
       video.load();
-      const tryPlay = () => video.play().catch(() => {
-        // Reintenta una vez tras breve espera; si sigue fallando avanza
-        setTimeout(() => video.play().catch(() => nextItem()), 800);
-      });
-      video.readyState >= 3 ? tryPlay() : video.addEventListener('canplay', tryPlay, { once: true });
+      // Fallback: si 'ended' no llega en VIDEO_FALLBACK_MS, avanzar igualmente
+      slideTimer = setTimeout(nextItem, VIDEO_FALLBACK_MS);
     } else {
-      video.pause(); video.hidden = true;
+      video.style.display = 'none';
+      video.pause();
       photo.src = item.src;
       photo.hidden = false;
-      photoTimer = setTimeout(() => nextItem(), PHOTO_MS);
+      slideTimer = setTimeout(nextItem, PHOTO_MS);
     }
   }
-
-  function nextItem() { playItem(idx + 1); }
 
   function showAttract() {
     if (!isOnWelcome()) return;
@@ -2177,9 +2177,12 @@ function showToast(msg) {
 
   function hideAttract() {
     screen.hidden = true;
-    video.pause(); video.src = ''; video.hidden = false;
+    clearTimeout(slideTimer);
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    video.style.display = 'block';
     photo.hidden = true;
-    clearTimeout(photoTimer);
     resetIdle();
   }
 
@@ -2188,7 +2191,9 @@ function showToast(msg) {
     if (isOnWelcome()) idleTimer = setTimeout(showAttract, IDLE_MS);
   }
 
-  video.addEventListener('ended', nextItem);
+  // 'ended' cancela el fallback y avanza al siguiente
+  video.addEventListener('ended', () => { clearTimeout(slideTimer); nextItem(); });
+
   screen.addEventListener('pointerdown', hideAttract);
 
   ['pointerdown', 'pointermove', 'keydown'].forEach(ev =>
