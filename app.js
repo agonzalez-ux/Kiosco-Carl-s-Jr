@@ -2121,10 +2121,9 @@ function showToast(msg) {
 
   const PLAYLIST = [
     { type: 'video', src: './promo1.mp4' },
-    { type: 'photo', src: './promo2.jpg', ms: 6_000 },
+    { type: 'photo', src: './promo2.jpg', ms: 3_000 },
     { type: 'video', src: './promo3.mp4' },
     { type: 'video', src: './promo4.mp4' },
-    { type: 'photo', src: './promo5.jpg', ms: 6_000 },
     { type: 'video', src: './promo6.mp4' },
   ];
 
