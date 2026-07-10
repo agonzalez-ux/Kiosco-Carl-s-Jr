@@ -14,7 +14,15 @@
 //     → Registra la app → copia el objeto firebaseConfig
 //  5. Pégalo aquí sustituyendo el null:
 // ══════════════════════════════════════════════════════════════
-const FIREBASE_CONFIG = null;
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAhb2aE8Zg6hR-J-tsUBHTCsbzI1Wn8eeI",
+  authDomain: "carlsjr-kiosko.firebaseapp.com",
+  databaseURL: "https://carlsjr-kiosko-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "carlsjr-kiosko",
+  storageBucket: "carlsjr-kiosko.firebasestorage.app",
+  messagingSenderId: "254893634722",
+  appId: "1:254893634722:web:098aee72f81d10db7e93fb"
+};
 
 // Ejemplo (sustituye con tus valores reales):
 // const FIREBASE_CONFIG = {
