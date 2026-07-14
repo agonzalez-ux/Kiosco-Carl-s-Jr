@@ -70,7 +70,7 @@
     .kds-demo-back:hover { color: #888; border-color: #555; }
 
     /* ── MAIN LAYOUT ── */
-    .kds-main { flex: 1; display: grid; grid-template-columns: 300px 1fr; overflow: hidden; }
+    .kds-main { flex: 1; display: grid; grid-template-columns: 260px 1fr 260px; overflow: hidden; }
 
     /* ── QUEUE (left) ── */
     .kds-queue {
@@ -601,6 +601,41 @@
     }
     .podium-end-day:hover { color: #aaa; border-color: #555; }
 
+    /* ── DISPATCHED PANEL ── */
+    .kds-dispatched {
+      display: flex; flex-direction: column;
+      border-left: 1px solid #2a2a2a;
+      background: #0d0d0d;
+      overflow: hidden;
+    }
+    .kds-dispatched-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 1px solid #222;
+    }
+    .kds-dispatched-header h2 { font-family: 'Anton', sans-serif; font-size: .9rem; letter-spacing: .08em; text-transform: uppercase; color: #22c55e; }
+    .dispatched-badge {
+      background: #22c55e; color: #000;
+      font-size: .7rem; font-weight: 800;
+      padding: 2px 7px; border-radius: 100px;
+    }
+    .kds-dispatched-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .d-card {
+      background: #131a10; border: 1px solid #22c55e33;
+      border-radius: 10px; padding: 10px 12px;
+    }
+    .d-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .d-card-id { font-family: 'Anton', sans-serif; font-size: 1.1rem; color: #22c55e; }
+    .d-card-time { font-size: .72rem; color: #555; }
+    .d-card-items { font-size: .78rem; color: #888; margin-bottom: 8px; }
+    .d-card-btn {
+      width: 100%; background: transparent; border: 1px solid #22c55e44;
+      color: #22c55e; border-radius: 6px; padding: 5px 0;
+      font-size: .75rem; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .d-card-btn:hover { background: #22c55e22; }
+    .d-empty { text-align: center; color: #333; padding: 32px 16px; font-size: .85rem; }
+
     /* Scrollbar */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -623,7 +658,8 @@
       .kds-demo-back { display: none; }
 
       /* Main: cola arriba, pedido activo abajo */
-      .kds-main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+      .kds-main { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+      .kds-dispatched { border-left: none; border-top: 2px solid #2a2a2a; max-height: 200px; }
 
       /* Cola: franja horizontal desplazable */
       .kds-queue {
@@ -794,6 +830,15 @@
       </div>
     </div>
 
+    <!-- Dispatched panel -->
+    <div class="kds-dispatched" id="kdsDispatched">
+      <div class="kds-dispatched-header">
+        <h2>Despachados</h2>
+        <span class="dispatched-badge" id="dispatchedBadge">0</span>
+      </div>
+      <div class="kds-dispatched-list" id="dispatchedList"></div>
+    </div>
+
   </main>
 
   <!-- ── BREAK SCREEN ── -->
@@ -898,8 +943,9 @@
       try { return JSON.parse(localStorage.getItem(STORAGE_ORDERS) || '[]'); } catch { return []; }
     }
     function saveOrders(orders) {
-      localStorage.setItem(STORAGE_ORDERS, JSON.stringify(orders));
-      CJSync.saveOrders(orders);
+      const cleaned = orders.filter(o => o.status !== 'ready' || (Date.now() - o.timestamp) < 8 * 60 * 1000);
+      localStorage.setItem(STORAGE_ORDERS, JSON.stringify(cleaned));
+      CJSync.saveOrders(cleaned);
     }
 
     function getWorkers() {
@@ -1143,6 +1189,41 @@
       document.getElementById('headerPts').textContent = pts;
     }
 
+    /* ── DISPATCHED PANEL ── */
+    function renderDispatched() {
+      const orders = getOrders();
+      const ready  = orders.filter(o => o.status === 'ready').sort((a,b) => b.timestamp - a.timestamp);
+      document.getElementById('dispatchedBadge').textContent = ready.length;
+      const list = document.getElementById('dispatchedList');
+      if (!list) return;
+      if (!ready.length) {
+        list.innerHTML = '<div class="d-empty">Sin pedidos despachados</div>';
+        return;
+      }
+      list.innerHTML = '';
+      ready.forEach(order => {
+        const mins = Math.floor((Date.now() - order.timestamp) / 60000);
+        const timeLabel = mins < 1 ? 'ahora' : `hace ${mins} min`;
+        const itemSummary = (order.items || []).map(i => `${i.qty}× ${i.name}`).join(', ');
+        const card = document.createElement('div');
+        card.className = 'd-card';
+        card.innerHTML = `
+          <div class="d-card-head">
+            <span class="d-card-id">#${order.id}</span>
+            <span class="d-card-time">${timeLabel}</span>
+          </div>
+          <div class="d-card-items">${itemSummary}</div>
+          <button class="d-card-btn">✓ Despachar</button>
+        `;
+        card.querySelector('.d-card-btn').addEventListener('click', () => {
+          const all = getOrders().filter(o => o.id !== order.id);
+          saveOrders(all);
+          renderDispatched();
+        });
+        list.appendChild(card);
+      });
+    }
+
     /* ── QUEUE RENDER ── */
     function render() {
       const orders = getOrders();
@@ -1156,6 +1237,8 @@
         list.innerHTML = `<div class="q-empty"><div class="q-empty-icon">🍽️</div><p>Sin pedidos en cola</p></div>`;
         return;
       }
+
+      renderDispatched();
 
       pending.forEach(order => {
         const diff = calcDifficulty(order);
@@ -1428,6 +1511,10 @@
       const pts     = calcPoints(elapsed, diff);
       const perf    = getPerf(elapsed, diff);
 
+      // Reset active before saveOrders so Firebase onOrdersChange doesn't block on activeOrderId
+      activeOrderId   = null;
+      activeStartTime = null;
+
       // Save to orders
       const orders = getOrders();
       const o = orders.find(o => o.id === order.id);
@@ -1438,10 +1525,6 @@
 
       refreshHeaderPts();
       renderRanking();
-
-      // Reset active
-      activeOrderId   = null;
-      activeStartTime = null;
 
       // Reset active panel
       const active = document.getElementById('kdsActive');
@@ -1454,6 +1537,7 @@
       `;
 
       render();
+      renderDispatched();
       showCelebration(pts, perf, elapsed, DIFF_CONFIG[diff].time);
     }
 
