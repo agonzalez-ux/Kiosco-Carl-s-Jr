@@ -1493,6 +1493,7 @@ function _mountStripeElement() {
       stripePayEl = stripeElements.create('payment', {
         terms: { card: 'never' },
         wallets: { link: 'never', applePay: 'never', googlePay: 'never' },
+        defaultValues: { billingDetails: { address: { country: 'MX' } } },
       });
       stripePayEl.mount('#stripe-payment-element');
     })
