@@ -943,7 +943,7 @@
       try { return JSON.parse(localStorage.getItem(STORAGE_ORDERS) || '[]'); } catch { return []; }
     }
     function saveOrders(orders) {
-      const cleaned = orders.filter(o => o.status !== 'ready' || (Date.now() - o.timestamp) < 8 * 60 * 1000);
+      const cleaned = orders.filter(o => o.status !== 'ready' || (Date.now() - (o.readyAt || o.timestamp)) < 8 * 60 * 1000);
       localStorage.setItem(STORAGE_ORDERS, JSON.stringify(cleaned));
       CJSync.saveOrders(cleaned);
     }
@@ -1518,7 +1518,7 @@
       // Save to orders
       const orders = getOrders();
       const o = orders.find(o => o.id === order.id);
-      if (o) { o.status = 'ready'; o.pts = pts; o.perf = perf; o.elapsed = elapsed; saveOrders(orders); }
+      if (o) { o.status = 'ready'; o.readyAt = Date.now(); o.pts = pts; o.perf = perf; o.elapsed = elapsed; saveOrders(orders); }
 
       // Update worker points
       if (currentWorker) addWorkerPoints(currentWorker.id, currentWorker.name, currentWorker.avatar, pts);
@@ -1835,7 +1835,7 @@
     // Sincronización cross-device via Firebase
     const fbActive = CJSync.onOrdersChange(orders => {
       try { localStorage.setItem(STORAGE_ORDERS, JSON.stringify(orders)); } catch(_) {}
-      if (!activeOrderId) render(); // solo re-renderizar si no hay pedido activo en pantalla
+      render(); // re-renderizar siempre para reflejar nuevos pedidos del kiosco
     });
     if (!fbActive) {
       // Fallback mismo dispositivo

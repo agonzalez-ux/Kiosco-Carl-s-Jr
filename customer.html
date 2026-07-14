@@ -509,9 +509,9 @@ function filterOrders(orders) {
   const now = Date.now();
   return orders.filter(o => {
     if (o.status === 'ready') {
-      return (now - o.timestamp) < READY_TTL;
+      return (now - (o.readyAt || o.timestamp)) < READY_TTL;
     }
-    return o.status === 'preparing';
+    return o.status === 'preparing' || o.status === 'pending';
   });
 }
 
@@ -532,6 +532,7 @@ function sig(orders) {
 
 /* ── STATUS META ── */
 function statusMeta(status) {
+  if (status === 'pending')   return { icon: '🔥', label: 'Pedido recibido, en breve empezamos' };
   if (status === 'preparing') return { icon: '🔥', label: '¡Lo estamos preparando!' };
   if (status === 'ready')     return { icon: '⭐', label: '¡LISTO! Ve a recoger tu pedido' };
   return { icon: '❓', label: status };
@@ -588,7 +589,7 @@ function refresh() {
   const bReady     = document.getElementById('board-ready');
   const main       = document.getElementById('main-board');
 
-  const preparing = orders.filter(o => o.status === 'preparing');
+  const preparing = orders.filter(o => o.status === 'preparing' || o.status === 'pending');
   const ready     = orders.filter(o => o.status === 'ready');
 
   document.getElementById('badge-preparing').textContent = preparing.length;

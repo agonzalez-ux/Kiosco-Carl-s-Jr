@@ -926,6 +926,11 @@ a { -webkit-tap-highlight-color: transparent; }
   transition: background .15s;
 }
 .btn-secondary:hover { background: var(--dark2); color: var(--white); }
+.stripe-test-hint {
+  font-size: .78rem; color: #aaa; background: #1e1e1e;
+  border: 1px solid #333; border-radius: 8px;
+  padding: 8px 12px; margin-bottom: 10px; text-align: center;
+}
 
 .checkout-success { text-align: center; }
 .success-anim { font-size: 4rem; animation: pop .5s cubic-bezier(.175,.885,.32,1.275); display: inline-block; margin-bottom: 12px; }
