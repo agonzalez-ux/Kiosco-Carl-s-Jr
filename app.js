@@ -1534,23 +1534,28 @@ function confirmPayment() {
       elements: stripeElements,
       confirmParams: { return_url: window.location.href },
       redirect: 'if_required',
-    }).then(({ error, paymentIntent }) => {
+    }).then(result => {
       stripePending = false;
       if (btn) { btn.disabled = false; btn.textContent = t('confirmPayLabel'); }
+      const { error, paymentIntent } = result || {};
       if (error) {
         showToast('❌ ' + (error.message || 'Error de pago'));
         return;
       }
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
+      const status = paymentIntent && paymentIntent.status;
+      if (status === 'succeeded' || status === 'processing') {
         addPoints(pts);
         CJSync.nextOrderNum(orderNum => {
           pushOrderToKDS(cartSnapshot, orderNum);
           _showSuccessScreen(orderNum, pts, cartSnapshot, total);
         });
+      } else if (status) {
+        showToast('⚠️ Estado del pago: ' + status);
       }
     }).catch(e => {
       stripePending = false;
       if (btn) { btn.disabled = false; btn.textContent = t('confirmPayLabel'); }
+      showToast('❌ Error al procesar el pago');
       console.warn('[Stripe] confirmPayment error:', e);
     });
     return;

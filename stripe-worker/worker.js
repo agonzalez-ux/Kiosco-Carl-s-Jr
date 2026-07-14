@@ -52,7 +52,7 @@ export default {
       `amount=${cents}`,
       `currency=${encodeURIComponent(currency || 'eur')}`,
       `description=${encodeURIComponent(description || "Carl's Jr — Pedido kiosco")}`,
-      `automatic_payment_methods%5Benabled%5D=true`,
+      `payment_method_types[]=card`,
     ].join('&');
 
     let stripeRes, stripeText;
