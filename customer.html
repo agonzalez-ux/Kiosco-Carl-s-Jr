@@ -114,19 +114,57 @@
       100% { transform: translateX(-100%); }
     }
 
-    /* ── MAIN BOARD ── */
+    /* ── SPLIT BOARD ── */
     main {
-      padding: 28px 24px 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       min-height: calc(100vh - 110px);
+      overflow: hidden;
     }
 
-    .board-header {
+    .split-col {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .split-col-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 24px 14px;
+      border-bottom: 2px solid #1a1a1a;
+    }
+
+    .split-col-icon { font-size: 22px; }
+
+    .split-col-title {
       font-family: 'Anton', sans-serif;
-      font-size: 15px;
-      letter-spacing: 4px;
-      color: #444;
+      font-size: 1rem;
+      letter-spacing: .2em;
       text-transform: uppercase;
-      margin-bottom: 24px;
+    }
+
+    .split-col-badge {
+      font-size: .7rem; font-weight: 800;
+      padding: 3px 9px; border-radius: 100px;
+    }
+
+    .col-preparing { border-right: 1px solid #1a1a1a; background: #0f0f0f; }
+    .col-preparing .split-col-title { color: #ff6600; }
+    .col-preparing .split-col-badge { background: rgba(204,0,0,.2); color: #ff6600; }
+
+    .col-ready { background: #0a1410; }
+    .col-ready .split-col-title { color: var(--green); }
+    .col-ready .split-col-badge { background: rgba(34,197,94,.2); color: var(--green); }
+
+    .split-col-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
 
     /* ── EMPTY STATE ── */
@@ -138,6 +176,7 @@
       min-height: 60vh;
       gap: 22px;
       text-align: center;
+      grid-column: 1 / -1;
     }
 
     .empty-burger {
@@ -161,6 +200,13 @@
       font-size: 16px;
       color: #555;
       max-width: 320px;
+    }
+
+    .col-empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: #333;
+      font-size: .9rem;
     }
 
     /* ── ORDERS GRID ── */
@@ -406,9 +452,23 @@
 </div>
 
 <!-- MAIN BOARD -->
-<main>
-  <div class="board-header" id="board-header">Tablero de pedidos</div>
-  <div id="board"></div>
+<main id="main-board">
+  <div class="split-col col-preparing">
+    <div class="split-col-header">
+      <span class="split-col-icon">🔥</span>
+      <span class="split-col-title">En preparación</span>
+      <span class="split-col-badge" id="badge-preparing">0</span>
+    </div>
+    <div class="split-col-list" id="board-preparing"></div>
+  </div>
+  <div class="split-col col-ready">
+    <div class="split-col-header">
+      <span class="split-col-icon">⭐</span>
+      <span class="split-col-title">Listos para recoger</span>
+      <span class="split-col-badge" id="badge-ready">0</span>
+    </div>
+    <div class="split-col-list" id="board-ready"></div>
+  </div>
 </main>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -515,37 +575,56 @@ function renderCard(order) {
 }
 
 function refresh() {
-  const all     = readOrders();
-  const orders  = filterOrders(all);
-  const newSig  = sig(orders);
+  const all    = readOrders();
+  const orders = filterOrders(all);
+  const newSig = sig(orders);
 
-  // Always update elapsed times (soft refresh every poll)
   updateEta(orders);
 
   if (newSig === lastSig) return;
   lastSig = newSig;
 
-  const board  = document.getElementById('board');
-  const header = document.getElementById('board-header');
+  const bPreparing = document.getElementById('board-preparing');
+  const bReady     = document.getElementById('board-ready');
+  const main       = document.getElementById('main-board');
+
+  const preparing = orders.filter(o => o.status === 'preparing');
+  const ready     = orders.filter(o => o.status === 'ready');
+
+  document.getElementById('badge-preparing').textContent = preparing.length;
+  document.getElementById('badge-ready').textContent     = ready.length;
 
   if (!orders.length) {
-    header.textContent = 'Tablero de pedidos';
-    board.innerHTML    = renderEmpty();
-    prevReadyIds       = new Set();
+    bPreparing.innerHTML = '';
+    bReady.innerHTML     = '';
+    // Show empty state spanning both columns
+    if (!main.querySelector('.empty-state')) {
+      const emp = document.createElement('div');
+      emp.className = 'empty-state';
+      emp.innerHTML = `
+        <div class="empty-burger" aria-hidden="true">🍔</div>
+        <div class="empty-headline">¡Haz tu pedido<br>en el kiosco!</div>
+        <div class="empty-sub">Cuando realices un pedido aparecerá aquí en tiempo real.</div>`;
+      main.appendChild(emp);
+    }
+    prevReadyIds = new Set();
     return;
   }
 
-  const readyCount    = orders.filter(o => o.status === 'ready').length;
-  const preparingCount = orders.filter(o => o.status === 'preparing').length;
+  // Remove empty state if present
+  const emp = main.querySelector('.empty-state');
+  if (emp) emp.remove();
 
-  header.textContent = readyCount
-    ? `🟢 ${readyCount} pedido${readyCount > 1 ? 's' : ''} listo${readyCount > 1 ? 's' : ''} — ¡pasa a recoger!`
-    : `🔥 Cocinando ${preparingCount} pedido${preparingCount > 1 ? 's' : ''}...`;
+  bPreparing.innerHTML = preparing.length
+    ? preparing.map(renderCard).join('')
+    : '<div class="col-empty">Ningún pedido en preparación</div>';
 
-  board.innerHTML = `<div class="orders-grid">${orders.map(renderCard).join('')}</div>`;
+  bReady.innerHTML = ready.length
+    ? ready.map(renderCard).join('')
+    : '<div class="col-empty">Ningún pedido listo aún</div>';
 
   // Detect newly-ready orders → confetti
-  const currentReadyIds = new Set(orders.filter(o => o.status === 'ready').map(o => o.id));
+  const currentReadyIds = new Set(ready.map(o => o.id));
   const newlyReady = [...currentReadyIds].filter(id => !prevReadyIds.has(id));
   if (newlyReady.length) fireConfetti();
   prevReadyIds = currentReadyIds;
