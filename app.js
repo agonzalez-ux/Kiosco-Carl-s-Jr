@@ -1493,6 +1493,7 @@ function _mountStripeElement() {
       stripePayEl = stripeElements.create('payment', {
         terms: { card: 'never' },
         wallets: { link: 'never', applePay: 'never', googlePay: 'never' },
+        fields: { billingDetails: { address: { country: 'never' } } },
         defaultValues: { billingDetails: { address: { country: 'MX' } } },
       });
       stripePayEl.mount('#stripe-payment-element');
@@ -1536,7 +1537,10 @@ function confirmPayment() {
 
     stripeInstance.confirmPayment({
       elements: stripeElements,
-      confirmParams: { return_url: window.location.href },
+      confirmParams: {
+        return_url: window.location.href,
+        payment_method_data: { billing_details: { address: { country: 'MX' } } },
+      },
       redirect: 'if_required',
     }).then(result => {
       stripePending = false;
