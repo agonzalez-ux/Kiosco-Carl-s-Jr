@@ -335,6 +335,21 @@ const PAYMENT_METHODS = [
   { id: 'qr',      label: 'QR / Bizum',  icon: '🔲' }
 ];
 
+// ── STRIPE CONFIG ──────────────────────────────────────────────
+// 1. Crea una cuenta en https://dashboard.stripe.com
+// 2. Modo Test → Developers → API keys → copia pk_test_...
+// 3. Pégala aquí:
+const STRIPE_PUBLIC_KEY = null; // ej: 'pk_test_51ABC...'
+// 4. Tras desplegar el Worker, pega aquí su URL:
+const WORKER_URL = null; // ej: 'https://carlsjr-stripe-worker.TU.workers.dev'
+// ──────────────────────────────────────────────────────────────
+
+/* ── Stripe runtime state ── */
+let stripeInstance   = null;
+let stripeElements   = null;
+let stripePayEl      = null;
+let stripePending    = false; // bloquea doble clic mientras procesa
+
 const QUIZ = [
   {
     id: 'protein',
@@ -1438,6 +1453,47 @@ function renderPaymentGrid() {
       renderPaymentGrid();
     });
   });
+
+  // Stripe Payment Element: solo si tarjeta + Stripe configurado
+  const stripeWrap = $('stripe-element-wrap');
+  if (state.payment === 'card' && STRIPE_PUBLIC_KEY && WORKER_URL) {
+    stripeWrap.hidden = false;
+    _mountStripeElement();
+  } else {
+    stripeWrap.hidden = true;
+    // Desmonta para no acumular instancias
+    if (stripePayEl) { stripePayEl.unmount(); stripePayEl = null; stripeElements = null; }
+  }
+}
+
+function _mountStripeElement() {
+  if (stripePayEl) return; // ya montado
+  if (!stripeInstance) {
+    if (typeof Stripe === 'undefined') {
+      console.warn('[Stripe] Stripe.js no cargado');
+      return;
+    }
+    stripeInstance = Stripe(STRIPE_PUBLIC_KEY);
+  }
+  const { total } = cartSummary();
+  const amountCents = Math.round(total * 100);
+
+  fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'create_intent', amountCents, description: "Carl's Jr — Pedido kiosco" }),
+  })
+    .then(r => r.json())
+    .then(({ clientSecret, error }) => {
+      if (error) { console.warn('[Stripe] Worker error:', error); return; }
+      stripeElements = stripeInstance.elements({ clientSecret, appearance: {
+        theme: 'night',
+        variables: { colorPrimary: '#CC0000', colorBackground: '#1a1a1a', fontFamily: 'Inter, sans-serif' },
+      }});
+      stripePayEl = stripeElements.create('payment');
+      stripePayEl.mount('#stripe-payment-element');
+    })
+    .catch(e => console.warn('[Stripe] create_intent error:', e));
 }
 
 let activeCountdownTimer = null;
@@ -1466,9 +1522,41 @@ function confirmPayment() {
   const cartSnapshot = [...state.cart];
   const { total } = cartSummary();
   const pts = Math.round(total * 10);
-  addPoints(pts);
 
-  // Número atómico cross-device; toda la UI se actualiza en el callback
+  // Pago con tarjeta real vía Stripe
+  if (state.payment === 'card' && STRIPE_PUBLIC_KEY && WORKER_URL && stripeElements) {
+    if (stripePending) return;
+    stripePending = true;
+    const btn = $('btnPay');
+    if (btn) { btn.disabled = true; btn.textContent = 'Procesando…'; }
+
+    stripeInstance.confirmPayment({
+      elements: stripeElements,
+      redirect: 'if_required',
+    }).then(({ error, paymentIntent }) => {
+      stripePending = false;
+      if (btn) { btn.disabled = false; btn.textContent = t('confirmPayLabel'); }
+      if (error) {
+        showToast('❌ ' + (error.message || 'Error de pago'));
+        return;
+      }
+      if (paymentIntent && paymentIntent.status === 'succeeded') {
+        addPoints(pts);
+        CJSync.nextOrderNum(orderNum => {
+          pushOrderToKDS(cartSnapshot, orderNum);
+          _showSuccessScreen(orderNum, pts, cartSnapshot, total);
+        });
+      }
+    }).catch(e => {
+      stripePending = false;
+      if (btn) { btn.disabled = false; btn.textContent = t('confirmPayLabel'); }
+      console.warn('[Stripe] confirmPayment error:', e);
+    });
+    return;
+  }
+
+  // Resto de métodos (efectivo, contactless, QR…) — flujo existente
+  addPoints(pts);
   CJSync.nextOrderNum(orderNum => {
     pushOrderToKDS(cartSnapshot, orderNum);
     _showSuccessScreen(orderNum, pts, cartSnapshot, total);

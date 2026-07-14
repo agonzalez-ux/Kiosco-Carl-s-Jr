@@ -205,6 +205,9 @@
       <div class="checkout-payment" id="checkoutPayment">
         <h2 id="howPayTitle">¿Cómo pagas?</h2>
         <div class="payment-grid" id="paymentGrid"></div>
+        <div id="stripe-element-wrap" hidden style="margin:16px 0 4px">
+          <div id="stripe-payment-element"></div>
+        </div>
         <button id="btnPay" class="btn-checkout" type="button" id="confirmPayBtn">Confirmar pago</button>
         <button id="btnCancelCheckout" class="btn-secondary" type="button" id="backOrderBtn">Volver al pedido</button>
       </div>
@@ -263,6 +266,7 @@
   <!-- TOAST -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <script src="https://js.stripe.com/v3/"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
