@@ -1532,6 +1532,7 @@ function confirmPayment() {
 
     stripeInstance.confirmPayment({
       elements: stripeElements,
+      confirmParams: { return_url: window.location.href },
       redirect: 'if_required',
     }).then(({ error, paymentIntent }) => {
       stripePending = false;

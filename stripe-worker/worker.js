@@ -1,96 +1,90 @@
-'use strict';
-
 /**
  * Cloudflare Worker — Stripe backend para el kiosco Carl's Jr
- *
- * Cómo desplegar:
- *  1. Instala Wrangler: npm install -g wrangler
- *  2. Inicia sesión: wrangler login
- *  3. Crea el secret: wrangler secret put STRIPE_SECRET_KEY
- *     (pega tu sk_test_... o sk_live_...)
- *  4. Despliega: wrangler deploy
- *  5. Copia la URL que muestra Wrangler (algo como https://stripe-worker.TU-SUBDOMINIO.workers.dev)
- *     y pégala en WORKER_URL dentro de app.js
  */
+
+const CORS = {
+  'Access-Control-Allow-Origin':  '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+function json(data, status) {
+  return new Response(JSON.stringify(data), {
+    status: status || 200,
+    headers: { ...CORS, 'Content-Type': 'application/json' },
+  });
+}
 
 export default {
   async fetch(request, env) {
-    // CORS — el kiosco puede estar en cualquier origen (GitHub Pages, local, etc.)
-    const corsHeaders = {
-      'Access-Control-Allow-Origin':  '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    };
-
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders });
+      return new Response(null, { status: 204, headers: CORS });
     }
 
     if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+      return new Response('Method not allowed', { status: 405, headers: CORS });
     }
 
     let body;
     try {
-      body = await request.json();
-    } catch {
-      return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      body = JSON.parse(await request.text());
+    } catch (e) {
+      return json({ error: 'Invalid JSON' }, 400);
+    }
+
+    const { action, amountCents, currency, description } = body;
+
+    if (action !== 'create_intent') {
+      return json({ error: 'Unknown action' }, 400);
+    }
+
+    const stripeKey = (env.STRIPE_SECRET_KEY || '').trim();
+    if (!stripeKey) {
+      return json({ error: 'STRIPE_SECRET_KEY not configured' }, 500);
+    }
+
+    const cents = Math.round(Number(amountCents));
+    if (!cents || cents < 50) {
+      return json({ error: 'amount_cents must be >= 50' }, 400);
+    }
+
+    const bodyStr = [
+      `amount=${cents}`,
+      `currency=${encodeURIComponent(currency || 'eur')}`,
+      `description=${encodeURIComponent(description || "Carl's Jr — Pedido kiosco")}`,
+      `automatic_payment_methods%5Benabled%5D=true`,
+    ].join('&');
+
+    let stripeRes, stripeText;
+    try {
+      stripeRes = await fetch('https://api.stripe.com/v1/payment_intents', {
+        method:  'POST',
+        headers: {
+          Authorization:  'Bearer ' + stripeKey,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: bodyStr,
       });
+      stripeText = await stripeRes.text();
+    } catch (e) {
+      return json({ error: 'Stripe network error: ' + e.message }, 502);
     }
 
-    const { action, ...params } = body;
-
-    if (action === 'create_intent') {
-      return handleCreateIntent(params, env, corsHeaders);
+    if (!stripeText) {
+      return json({ error: 'Stripe empty response', status: stripeRes.status }, 502);
     }
 
-    return new Response(JSON.stringify({ error: 'Unknown action' }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    let stripeData;
+    try {
+      stripeData = JSON.parse(stripeText);
+    } catch (e) {
+      return json({ error: 'Stripe invalid JSON' }, 502);
+    }
+
+    if (!stripeRes.ok) {
+      return json({ error: stripeData.error?.message || 'Stripe error' }, 502);
+    }
+
+    return json({ clientSecret: stripeData.client_secret });
   },
 };
-
-/**
- * Crea un PaymentIntent en Stripe.
- * El frontend recibe el client_secret y confirma el pago con Stripe.js.
- */
-async function handleCreateIntent({ amountCents, currency = 'eur', description }, env, corsHeaders) {
-  if (!amountCents || amountCents < 50) {
-    return jsonResponse({ error: 'amount_cents must be >= 50' }, 400, corsHeaders);
-  }
-
-  const formData = new URLSearchParams({
-    amount:   String(Math.round(amountCents)),
-    currency,
-    'automatic_payment_methods[enabled]': 'true',
-    description: description || "Carl's Jr — Pedido kiosco",
-  });
-
-  const stripeRes = await fetch('https://api.stripe.com/v1/payment_intents', {
-    method:  'POST',
-    headers: {
-      'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
-      'Content-Type':  'application/x-www-form-urlencoded',
-    },
-    body: formData.toString(),
-  });
-
-  const data = await stripeRes.json();
-
-  if (!stripeRes.ok) {
-    return jsonResponse({ error: data.error?.message || 'Stripe error' }, 502, corsHeaders);
-  }
-
-  // Solo devolvemos el client_secret — la clave secreta nunca sale del Worker
-  return jsonResponse({ clientSecret: data.client_secret }, 200, corsHeaders);
-}
-
-function jsonResponse(body, status, corsHeaders) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
