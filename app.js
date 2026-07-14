@@ -1490,7 +1490,10 @@ function _mountStripeElement() {
         theme: 'night',
         variables: { colorPrimary: '#CC0000', colorBackground: '#1a1a1a', fontFamily: 'Inter, sans-serif' },
       }});
-      stripePayEl = stripeElements.create('payment');
+      stripePayEl = stripeElements.create('payment', {
+        terms: { card: 'never' },
+        wallets: { link: 'never', applePay: 'never', googlePay: 'never' },
+      });
       stripePayEl.mount('#stripe-payment-element');
     })
     .catch(e => console.warn('[Stripe] create_intent error:', e));
