@@ -339,9 +339,9 @@ const PAYMENT_METHODS = [
 // 1. Crea una cuenta en https://dashboard.stripe.com
 // 2. Modo Test → Developers → API keys → copia pk_test_...
 // 3. Pégala aquí:
-const STRIPE_PUBLIC_KEY = null; // ej: 'pk_test_51ABC...'
+const STRIPE_PUBLIC_KEY = 'pk_test_51Tt2ESGRbfstfElckKeac2boGYrqDnDgbszlKDBKVfGJUuREXtlMB86pL2sev5N1KIvGDwp5ooZVaPNljeFoylkp00o2jcPRYA';
 // 4. Tras desplegar el Worker, pega aquí su URL:
-const WORKER_URL = null; // ej: 'https://carlsjr-stripe-worker.TU.workers.dev'
+const WORKER_URL = 'https://carlsjr-stripe-worker.carlsjr-aroa.workers.dev';
 // ──────────────────────────────────────────────────────────────
 
 /* ── Stripe runtime state ── */
