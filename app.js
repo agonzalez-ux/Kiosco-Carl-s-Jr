@@ -698,6 +698,7 @@ function initSlider() {
 function bindTopbar() {
   $('btnBackToWelcome').addEventListener('click', () => location.reload());
   $('btnCartFab').addEventListener('click', openCart);
+  if ($('btnSetupTickets')) $('btnSetupTickets').addEventListener('click', setupTicketFolder);
 }
 
 /* ─── CATEGORY NAV ─── */
@@ -1482,57 +1483,26 @@ function pushOrderToKDS(cartSnapshot, num) {
 }
 
 function confirmPayment() {
+  if (stripePending) return;
+  stripePending = true;
+  const btn = $('btnPay');
+  if (btn) { btn.disabled = true; btn.textContent = 'Procesando…'; }
+
   const cartSnapshot = [...state.cart];
   const { total } = cartSummary();
   const pts = Math.round(total * 10);
 
-  // Pago con tarjeta real vía Stripe
-  if (state.payment === 'card' && STRIPE_PUBLIC_KEY && WORKER_URL && stripeElements) {
-    if (stripePending) return;
-    stripePending = true;
-    const btn = $('btnPay');
-    if (btn) { btn.disabled = true; btn.textContent = 'Procesando…'; }
-
-    stripeInstance.confirmPayment({
-      elements: stripeElements,
-      confirmParams: {
-        return_url: window.location.href,
-        payment_method_data: { billing_details: { address: { country: 'MX' } } },
-      },
-      redirect: 'if_required',
-    }).then(result => {
-      stripePending = false;
-      if (btn) { btn.disabled = false; btn.textContent = t('confirmPayLabel'); }
-      const { error, paymentIntent } = result || {};
-      if (error) {
-        showToast('❌ ' + (error.message || 'Error de pago'));
-        return;
-      }
-      const status = paymentIntent && paymentIntent.status;
-      if (status === 'succeeded' || status === 'processing') {
-        addPoints(pts);
-        CJSync.nextOrderNum(orderNum => {
-          pushOrderToKDS(cartSnapshot, orderNum);
-          _showSuccessScreen(orderNum, pts, cartSnapshot, total);
-        });
-      } else if (status) {
-        showToast('⚠️ Estado del pago: ' + status);
-      }
-    }).catch(e => {
-      stripePending = false;
-      if (btn) { btn.disabled = false; btn.textContent = t('confirmPayLabel'); }
-      showToast('❌ Error al procesar el pago');
-      console.warn('[Stripe] confirmPayment error:', e);
+  // Simulación de pago (tarjeta, Apple Pay, Google Pay) — no depende de
+  // que el Worker de Stripe esté disponible para completar el pedido.
+  setTimeout(() => {
+    stripePending = false;
+    if (btn) { btn.disabled = false; btn.textContent = t('confirmPayLabel'); }
+    addPoints(pts);
+    CJSync.nextOrderNum(orderNum => {
+      pushOrderToKDS(cartSnapshot, orderNum);
+      _showSuccessScreen(orderNum, pts, cartSnapshot, total);
     });
-    return;
-  }
-
-  // Resto de métodos (efectivo, contactless, QR…) — flujo existente
-  addPoints(pts);
-  CJSync.nextOrderNum(orderNum => {
-    pushOrderToKDS(cartSnapshot, orderNum);
-    _showSuccessScreen(orderNum, pts, cartSnapshot, total);
-  });
+  }, 600);
 }
 
 function _showSuccessScreen(orderNum, pts, cartSnapshot, total) {
@@ -1615,6 +1585,28 @@ function _showSuccessScreen(orderNum, pts, cartSnapshot, total) {
     <div class="ticket-thanks">¡Gracias por tu visita!</div>
   `;
 
+  const receiptText = [
+    "CARL'S JR",
+    'Bigger. Better. Burgers.',
+    receiptDate,
+    '----------------------------------------',
+    `PEDIDO #${orderNum}`,
+    '----------------------------------------',
+    ...cartSnapshot.map(i => {
+      const pr = productById(i.productId);
+      const name = pr ? pName(pr) : i.name;
+      const line = EUR.format(cartLineTotal(i));
+      return `${i.qty}x ${name}  ${line}`;
+    }),
+    '----------------------------------------',
+    `TOTAL: ${EUR.format(total)}`,
+    '----------------------------------------',
+    !state.isGuest ? `+${pts} puntos acumulados` : '',
+    '¡Gracias por tu visita!',
+  ].filter(Boolean).join('\n');
+
+  saveTicketToFile(orderNum, receiptText);
+
   $('btnPrintTicket').onclick = () => printReceipt(receiptHtml);
   printReceipt(receiptHtml);
 
@@ -1658,6 +1650,88 @@ function updatePointsDisplay() {
 /* ─── DAILY CHALLENGE BAR ─── */
 function animateDcBar(pct) {
   $('dcBar').style.width = pct + '%';
+}
+
+/* ─── TICKETS EN DISCO (File System Access API) ───
+   Guarda cada pedido como .txt en una carpeta local. La carpeta se elige UNA
+   VEZ desde el botón de configuración (setupTicketFolder) — nunca durante el
+   checkout de un cliente, para no interrumpirlo con un selector de archivos
+   del sistema operativo. Solo funciona en Chrome/Edge, abierto directamente
+   (no dentro de un iframe de terceros como Admira). */
+let _ticketDirHandle = null;
+
+function _openTicketsDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('cj-tickets-db', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('handles');
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function _getStoredTicketDir() {
+  try {
+    const db = await _openTicketsDB();
+    return await new Promise((resolve) => {
+      const tx = db.transaction('handles', 'readonly');
+      const req = tx.objectStore('handles').get('ticketsDir');
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch { return null; }
+}
+
+async function _storeTicketDir(handle) {
+  try {
+    const db = await _openTicketsDB();
+    const tx = db.transaction('handles', 'readwrite');
+    tx.objectStore('handles').put(handle, 'ticketsDir');
+  } catch (e) { console.warn('[Tickets] No se pudo guardar la carpeta:', e); }
+}
+
+// Solo comprueba/reusa el permiso ya concedido. NUNCA abre el selector de
+// carpetas — a diferencia de setupTicketFolder(), esto es seguro de llamar
+// en cualquier momento del checkout sin arriesgar interrumpir al cliente.
+async function _getGrantedTicketDir() {
+  if (_ticketDirHandle) return _ticketDirHandle;
+  const stored = await _getStoredTicketDir();
+  if (!stored) return null;
+  try {
+    const perm = await stored.queryPermission({ mode: 'readwrite' });
+    if (perm === 'granted') { _ticketDirHandle = stored; return stored; }
+  } catch (e) { console.warn('[Tickets] Carpeta guardada ya no es válida:', e); }
+  return null;
+}
+
+// Acción explícita de configuración (botón "Configurar carpeta de tickets").
+// Debe llamarse directamente desde un clic real del usuario — es la única
+// función de este módulo que puede abrir el selector de carpetas del sistema.
+async function setupTicketFolder() {
+  if (typeof window.showDirectoryPicker !== 'function') {
+    showToast('⚠️ Tu navegador no soporta guardar tickets en disco');
+    return;
+  }
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    _ticketDirHandle = handle;
+    await _storeTicketDir(handle);
+    showToast('✅ Carpeta de tickets configurada');
+  } catch (e) {
+    console.warn('[Tickets] Selección de carpeta cancelada:', e);
+  }
+}
+
+async function saveTicketToFile(orderNum, text) {
+  try {
+    const dir = await _getGrantedTicketDir();
+    if (!dir) return; // no configurado: el pedido sigue su curso con normalidad
+    const fileHandle = await dir.getFileHandle(`pedido-${orderNum}.txt`, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(text);
+    await writable.close();
+  } catch (e) {
+    console.warn('[Tickets] Error al guardar el ticket:', e);
+  }
 }
 
 /* ─── CONFETTI ─── */
