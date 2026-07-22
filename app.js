@@ -1607,8 +1607,8 @@ function _showSuccessScreen(orderNum, pts, cartSnapshot, total) {
 
   saveTicketToFile(orderNum, receiptText);
 
+  // Solo se imprime si el cliente pulsa el botón — nunca automáticamente.
   $('btnPrintTicket').onclick = () => printReceipt(receiptHtml);
-  printReceipt(receiptHtml);
 
   $('checkoutPayment').hidden = true;
   $('checkoutSuccess').hidden = false;
