@@ -86,25 +86,28 @@
       background: var(--yellow); color: #000; font-size: .7rem; font-weight: 800;
       border-radius: 999px; min-width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; padding: 0 5px;
     }
-    .kds-queue-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .kds-queue-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
 
     /* ── QUEUE CARD ── */
     .q-card {
       background: var(--card); border: 1.5px solid var(--border); border-left: 4px solid var(--yellow);
-      border-radius: 10px; padding: 12px; cursor: pointer;
+      border-radius: 8px; padding: 8px 10px; cursor: pointer;
       transition: border-color .15s, transform .15s, box-shadow .15s;
     }
     .q-card:hover { transform: translateX(3px); box-shadow: 0 4px 16px rgba(255,200,44,.15); border-color: var(--yellow); }
-    .q-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .q-card-id { font-family: var(--font-head); font-size: 1.2rem; color: var(--yellow); }
-    .q-card-diff { font-size: .65rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
+    .q-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .q-card-id { font-family: var(--font-head); font-size: 1.05rem; color: var(--yellow); }
+    .q-card-diff { font-size: .6rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
     .diff-easy   { background: rgba(34,197,94,.15); color: #22C55E; }
     .diff-medium { background: rgba(255,200,44,.15); color: var(--yellow); }
     .diff-hard   { background: rgba(204,0,0,.2); color: #ff6666; }
-    .q-card-items { font-size: .78rem; color: #999; margin-bottom: 10px; line-height: 1.4; }
+    .q-card-items {
+      font-size: .74rem; color: #999; margin-bottom: 6px; line-height: 1.3;
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+    }
     .q-card-btn {
-      width: 100%; padding: 8px; border-radius: 6px;
-      background: var(--yellow); color: #000; font-weight: 800; font-size: .75rem;
+      width: 100%; padding: 6px; border-radius: 6px;
+      background: var(--yellow); color: #000; font-weight: 800; font-size: .72rem;
       letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
       transition: opacity .15s;
     }
@@ -128,7 +131,7 @@
     .active-empty p { color: #444; font-size: .9rem; }
 
     .active-card {
-      flex: 1; display: grid; grid-template-columns: 1fr 360px;
+      flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 360px;
       overflow: hidden;
     }
 
@@ -205,6 +208,7 @@
       background: var(--card); border-left: 2px solid var(--border);
       display: flex; flex-direction: column; align-items: center; justify-content: space-between;
       padding: 28px 24px; gap: 20px;
+      min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
     }
 
     .timer-ring-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
@@ -776,7 +780,7 @@
   <!-- ── HEADER ── -->
   <header class="kds-header">
     <div class="kds-logo">
-      <img referrerpolicy="no-referrer" src="https://carlsjr.es/wp-content/uploads/2023/03/Carls-Jr-Logo-1.png" alt="Carl's Jr" onerror="this.style.display='none'" />
+      <img referrerpolicy="no-referrer" src="./logo-carlsjr.svg" alt="Carl's Jr" onerror="this.style.display='none'" />
       <div>
         <div class="kds-logo-text">Carl's Jr</div>
         <div class="kds-logo-sub">Kitchen Display</div>
@@ -1833,14 +1837,22 @@
     initWorkerModal();
 
     // Sincronización cross-device via Firebase
+    // Varios pedidos casi simultáneos disparan varias notificaciones de Firebase
+    // en pocos ms; se agrupan en un solo render para evitar bloqueos de UI.
+    let _renderDebounce = null;
+    function scheduleRender() {
+      if (_renderDebounce) clearTimeout(_renderDebounce);
+      _renderDebounce = setTimeout(() => { _renderDebounce = null; render(); }, 120);
+    }
+
     const fbActive = CJSync.onOrdersChange(orders => {
       try { localStorage.setItem(STORAGE_ORDERS, JSON.stringify(orders)); } catch(_) {}
-      render(); // re-renderizar siempre para reflejar nuevos pedidos del kiosco
+      scheduleRender();
     });
     if (!fbActive) {
       // Fallback mismo dispositivo
-      window.addEventListener('storage', e => { if (e.key === STORAGE_ORDERS) render(); });
-      try { new BroadcastChannel('cj-kds').onmessage = () => render(); } catch(_) {}
+      window.addEventListener('storage', e => { if (e.key === STORAGE_ORDERS) scheduleRender(); });
+      try { new BroadcastChannel('cj-kds').onmessage = () => scheduleRender(); } catch(_) {}
     }
 
     render();

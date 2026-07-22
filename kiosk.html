@@ -17,7 +17,7 @@
   <section id="welcome" class="welcome" aria-label="Bienvenida">
     <div class="welcome-bg"></div>
     <div class="welcome-content">
-      <img referrerpolicy="no-referrer" src="https://carlsjr.es/wp-content/uploads/2023/03/Carls-Jr-Logo-1.png" alt="Carl's Jr" class="welcome-logo" onerror="this.style.display='none'" />
+      <img referrerpolicy="no-referrer" src="./logo-carlsjr.svg" alt="Carl's Jr" class="welcome-logo" onerror="this.style.display='none'" />
 
       <!-- Selector de idioma -->
       <div class="lang-switcher">
@@ -46,42 +46,9 @@
         <p class="welcome-eyebrow" data-i18n="eyebrow">Bigger. Better. Burgers.</p>
         <h1 class="welcome-title" data-i18n="title">Haz tu pedido<br>a lo grande</h1>
       </div>
-      <button id="btnLogin" class="btn-start" type="button">
-        <span class="btn-start-inner" data-i18n="btnLogin">Iniciar sesión y sumar puntos ⭐</span>
-      </button>
-      <button id="btnStart" class="btn-guest" type="button" data-i18n="btnGuest">
+      <button id="btnStart" class="btn-start" type="button" data-i18n="btnGuest">
         Continuar sin cuenta
       </button>
-
-    <!-- ── PANTALLA DE LOGIN (QR + formulario) ── -->
-    <div id="loginScreen" class="login-screen" hidden>
-      <div class="ls-card">
-        <button id="btnLoginBack" class="ls-back" type="button" data-i18n="lsBack">← Volver</button>
-        <h2 class="ls-title" data-i18n="lsTitle">Entra con tu cuenta</h2>
-        <p class="ls-sub" data-i18n="lsSub">Escanea el QR con tu móvil o rellena el formulario aquí</p>
-
-        <div class="ls-qr-wrap">
-          <div id="qrContainer" class="ls-qr" aria-label="QR de acceso"></div>
-          <p class="ls-qr-hint" data-i18n="lsQrHint">📱 Apunta la cámara</p>
-        </div>
-
-        <div class="ls-divider"><span data-i18n="lsDivider">o rellena aquí</span></div>
-
-        <form id="loginForm" class="ls-form" novalidate>
-          <label class="ls-field">
-            <span data-i18n="lsNameLabel">Tu nombre</span>
-            <input id="loginName" type="text" placeholder="Ej. María" autocomplete="given-name" inputmode="text" enterkeyhint="next" required />
-          </label>
-          <label class="ls-field">
-            <span data-i18n="lsEmailLabel">Email (para acumular puntos)</span>
-            <input id="loginEmail" type="email" placeholder="maria@email.com" autocomplete="email" inputmode="email" enterkeyhint="done" required />
-          </label>
-          <button type="submit" class="btn-start ls-submit">
-            <span class="btn-start-inner" data-i18n="lsSubmit">¡Entrar y sumar puntos! ⭐</span>
-          </button>
-        </form>
-      </div>
-    </div>
     </div>
   </section>
 
@@ -91,7 +58,7 @@
     <!-- TOPBAR -->
     <header class="topbar">
       <button id="btnBackToWelcome" class="topbar-logo" type="button" aria-label="Inicio">
-        <img referrerpolicy="no-referrer" src="https://carlsjr.es/wp-content/uploads/2023/03/Carls-Jr-Logo-1.png" alt="Carl's Jr" class="topbar-logo-img" onerror="this.style.display='none'" />
+        <img referrerpolicy="no-referrer" src="./logo-carlsjr.svg" alt="Carl's Jr" class="topbar-logo-img" onerror="this.style.display='none'" />
         <span class="topbar-logo-text">Carl's Jr</span>
       </button>
       <div class="topbar-points" id="pointsDisplay" aria-label="Tus puntos">
@@ -171,7 +138,7 @@
     <div class="cart-footer">
       <div class="cart-totals" id="cartTotals"></div>
       <button id="btnCheckout" class="btn-checkout" type="button" disabled>
-        <span id="payBtnLabel">Pagar</span> · <span id="checkoutTotal">0,00 €</span>
+        <span id="payBtnLabel">Pagar</span> · <span id="checkoutTotal">$0.00</span>
       </button>
     </div>
   </aside>
@@ -268,7 +235,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="https://js.stripe.com/v3/"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="./sync.js"></script>

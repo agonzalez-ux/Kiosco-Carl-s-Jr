@@ -4,7 +4,7 @@
    CARL'S JR — KIOSCO CLIENTE
    ═══════════════════════════════════════════════════ */
 
-const EUR = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+const EUR = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
 /* ─── IFRAME-SAFE MODAL ─── */
 function safeModal(dialog) {
@@ -328,11 +328,8 @@ const MODIFIERS = [
 
 const PAYMENT_METHODS = [
   { id: 'card',    label: 'Tarjeta',     icon: '💳' },
-  { id: 'contactless', label: 'Contactless', icon: '📱' },
   { id: 'apple',   label: 'Apple Pay',   icon: '🍎' },
   { id: 'google',  label: 'Google Pay',  icon: '🔵' },
-  { id: 'cash',    label: 'Efectivo',    icon: '💵' },
-  { id: 'qr',      label: 'QR / Bizum',  icon: '🔲' }
 ];
 
 // ── STRIPE CONFIG ──────────────────────────────────────────────
@@ -475,11 +472,11 @@ const LANGS = {
     upsellBurgerMsg: '¿Y unas Crisscuts para acompañar?',
     upsellBurgerDesc: "Las favoritas de Carl's Jr, siempre crujientes.",
     upsellDrinkMsg: 'Añade un Refresco Refill',
-    upsellDrinkDesc: 'Soda ilimitada mientras comes. ¡Por solo 2,95 €!',
+    upsellDrinkDesc: 'Soda ilimitada mientras comes. ¡Por solo $2.95!',
     upsellShakeMsg: '¿Un batido Oreo para terminar?',
     upsellShakeDesc: "El mejor final para tu visita a Carl's Jr.",
     upsellTwistMsg: 'El toque final: Twist Oreo',
-    upsellTwistDesc: 'Solo 3,95 €. Un pequeño extra para el final.',
+    upsellTwistDesc: 'Solo $3.95. Un pequeño extra para el final.',
     confirmPayLabel: 'Confirmar pago',
     backOrderLabel: 'Volver al pedido',
     'mod-no-onion': 'Sin cebolla', 'mod-no-tomato': 'Sin tomate', 'mod-no-sauce': 'Sin salsa',
@@ -554,11 +551,11 @@ const LANGS = {
     upsellBurgerMsg: 'How about Crisscuts on the side?',
     upsellBurgerDesc: "Carl's Jr favorites, always crispy.",
     upsellDrinkMsg: 'Add a Refill Soda',
-    upsellDrinkDesc: 'Unlimited refills while you eat. Just €2.95!',
+    upsellDrinkDesc: 'Unlimited refills while you eat. Just $2.95!',
     upsellShakeMsg: 'Finish with an Oreo Shake?',
     upsellShakeDesc: "The best ending to your Carl's Jr visit.",
     upsellTwistMsg: 'The final touch: Twist Oreo',
-    upsellTwistDesc: 'Just €3.95. A little extra to finish.',
+    upsellTwistDesc: 'Just $3.95. A little extra to finish.',
     confirmPayLabel: 'Confirm payment',
     backOrderLabel: 'Back to order',
     'mod-no-onion': 'No onion', 'mod-no-tomato': 'No tomato', 'mod-no-sauce': 'No sauce',
@@ -616,40 +613,13 @@ function init() {
   bindRegisterDialog();
   bindLangSwitcher();
   updatePointsDisplay();
-  drawQR();
 }
 
 /* ─── WELCOME ─── */
 function bindWelcome() {
-  // Guest: entra sin cuenta, sin puntos
   $('btnStart').addEventListener('click', () => startApp(true));
-
-  // Login: muestra pantalla QR + form
-  $('btnLogin').addEventListener('click', showLoginScreen);
-
-  // Volver desde login
-  $('btnLoginBack').addEventListener('click', hideLoginScreen);
-
-  // Submit del formulario
-  $('loginForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const name  = $('loginName').value.trim();
-    const email = $('loginEmail').value.trim();
-    if (!name || !email) { showToast(t('toastNameEmail')); return; }
-    state.userName = name;
-    startApp(false);
-  });
-
   initSlider();
   applyI18n();
-}
-
-function showLoginScreen() {
-  $('loginScreen').hidden = false;
-}
-
-function hideLoginScreen() {
-  $('loginScreen').hidden = true;
 }
 
 function startApp(isGuest) {
@@ -667,26 +637,6 @@ function startApp(isGuest) {
     showToast(t('toastWelcome')(state.userName));
   }
   setTimeout(() => w.remove(), 450);
-}
-
-/* ─── QR CODE REAL (qrcodejs) ─── */
-function drawQR() {
-  const container = $('qrContainer');
-  if (!container) return;
-  container.innerHTML = '';
-  const url = 'https://carlsjr.es/loyalty?utm_source=kiosk&utm_medium=qr&terminal=T-04';
-  if (typeof QRCode !== 'undefined') {
-    new QRCode(container, {
-      text: url,
-      width: 154,
-      height: 154,
-      colorDark: '#0f0f0f',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H
-    });
-  } else {
-    container.innerHTML = `<div style="padding:20px;font-size:.7rem;color:#555;text-align:center">carlsjr.es/loyalty</div>`;
-  }
 }
 
 /* ─── SLIDER BIENVENIDA (coverflow) ─── */
@@ -993,17 +943,26 @@ function closeCart() {
 }
 
 function addToCart(product, mods = [], qty = 1, note = '') {
-  const item = {
-    key: crypto.randomUUID(),
-    productId: product.id,
-    name: product.name,
-    img: product.img,
-    unitPrice: product.price,
-    mods,
-    qty,
-    note
-  };
-  state.cart.push(item);
+  const modsSig = [...mods].sort().join(',');
+  const existing = state.cart.find(i =>
+    i.productId === product.id &&
+    [...i.mods].sort().join(',') === modsSig &&
+    i.note === note
+  );
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    state.cart.push({
+      key: crypto.randomUUID(),
+      productId: product.id,
+      name: product.name,
+      img: product.img,
+      unitPrice: product.price,
+      mods,
+      qty,
+      note
+    });
+  }
   renderCart();
   triggerUpsell();
   showToast(t('toastAdded')(pName(product)));
@@ -1633,48 +1592,31 @@ function _showSuccessScreen(orderNum, pts, cartSnapshot, total) {
     });
   }
 
-  // Construir recibo imprimible (oculto salvo @media print)
-  const existing = document.getElementById('print-receipt');
-  if (existing) existing.remove();
-  const receipt = document.createElement('div');
-  receipt.id = 'print-receipt';
-  receipt.style.cssText = 'display:none';
+  // Construir recibo imprimible — se imprime en un iframe aislado
+  // (evita que Admira imprima la página completa del reproductor en blanco)
   const receiptDate = new Date().toLocaleString('es-ES', { dateStyle:'short', timeStyle:'short' });
-  receipt.innerHTML = `
-    <div style="font-family:'Courier New',monospace;width:280px;color:#000;font-size:13px;line-height:1.5">
-      <div style="text-align:center;margin-bottom:12px">
-        <div style="font-size:22px;font-weight:900;letter-spacing:2px">CARL'S JR</div>
-        <div style="font-size:11px;color:#555">Bigger. Better. Burgers.</div>
-        <div style="font-size:11px;color:#555;margin-top:4px">${receiptDate}</div>
-      </div>
-      <div style="border-top:1px dashed #000;margin:8px 0"></div>
-      <div style="text-align:center;font-size:32px;font-weight:900;letter-spacing:1px;margin:8px 0">
-        PEDIDO #${orderNum}
-      </div>
-      <div style="border-top:1px dashed #000;margin:8px 0"></div>
-      ${cartSnapshot.map(i => {
-        const pr = productById(i.productId);
-        const name = pr ? pName(pr) : i.name;
-        const line = EUR.format(cartLineTotal(i));
-        return `<div style="display:flex;justify-content:space-between;margin:4px 0">
-          <span>${i.qty}× ${name}</span><span>${line}</span>
-        </div>`;
-      }).join('')}
-      <div style="border-top:1px dashed #000;margin:8px 0"></div>
-      <div style="display:flex;justify-content:space-between;font-weight:900;font-size:15px">
-        <span>TOTAL</span><span>${EUR.format(total)}</span>
-      </div>
-      <div style="border-top:1px dashed #000;margin:8px 0"></div>
-      ${!state.isGuest ? `<div style="text-align:center;font-size:11px;color:#555;margin-top:4px">+${pts} puntos acumulados ⭐</div>` : ''}
-      <div style="text-align:center;font-size:11px;color:#555;margin-top:12px">¡Gracias por tu visita!</div>
-    </div>`;
-  document.body.appendChild(receipt);
+  const receiptHtml = `
+    <div class="ticket-logo">CARL'S JR</div>
+    <div class="ticket-tag">Bigger. Better. Burgers.</div>
+    <div class="ticket-date">${receiptDate}</div>
+    <div class="ticket-rule"></div>
+    <div class="ticket-order">PEDIDO #${orderNum}</div>
+    <div class="ticket-rule"></div>
+    ${cartSnapshot.map(i => {
+      const pr = productById(i.productId);
+      const name = pr ? pName(pr) : i.name;
+      const line = EUR.format(cartLineTotal(i));
+      return `<div class="ticket-line"><span>${i.qty}× ${name}</span><span>${line}</span></div>`;
+    }).join('')}
+    <div class="ticket-rule"></div>
+    <div class="ticket-line ticket-total"><span>TOTAL</span><span>${EUR.format(total)}</span></div>
+    <div class="ticket-rule"></div>
+    ${!state.isGuest ? `<div class="ticket-pts">+${pts} puntos acumulados ⭐</div>` : ''}
+    <div class="ticket-thanks">¡Gracias por tu visita!</div>
+  `;
 
-  $('btnPrintTicket').onclick = () => {
-    receipt.style.cssText = '';
-    window.print();
-    receipt.style.cssText = 'display:none';
-  };
+  $('btnPrintTicket').onclick = () => printReceipt(receiptHtml);
+  printReceipt(receiptHtml);
 
   $('checkoutPayment').hidden = true;
   $('checkoutSuccess').hidden = false;
@@ -1719,13 +1661,57 @@ function animateDcBar(pct) {
 }
 
 /* ─── CONFETTI ─── */
+let _confettiFrame = null;
+/* ─── IMPRESIÓN DE TICKET (iframe aislado, tamaño de ticket térmico) ─── */
+function printReceipt(bodyHtml) {
+  const existing = document.getElementById('print-frame');
+  if (existing) existing.remove();
+
+  const iframe = document.createElement('iframe');
+  iframe.id = 'print-frame';
+  iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;visibility:hidden;';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentDocument;
+  doc.open();
+  doc.write(`<!doctype html>
+<html><head><meta charset="utf-8"><title></title>
+<style>
+  @page { size: 80mm auto; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    width: 80mm; padding: 4mm 5mm; color: #000;
+    font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;
+  }
+  .ticket-logo { text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 2px; }
+  .ticket-tag  { text-align: center; font-size: 10px; color: #333; }
+  .ticket-date { text-align: center; font-size: 10px; color: #333; margin-top: 2px; }
+  .ticket-rule { border-top: 1px dashed #000; margin: 6px 0; }
+  .ticket-order { text-align: center; font-size: 22px; font-weight: 900; }
+  .ticket-line { display: flex; justify-content: space-between; margin: 3px 0; }
+  .ticket-total { font-weight: 900; font-size: 14px; }
+  .ticket-pts, .ticket-thanks { text-align: center; font-size: 10px; color: #333; margin-top: 4px; }
+</style>
+</head><body>${bodyHtml}</body></html>`);
+  doc.close();
+
+  iframe.onload = () => {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    setTimeout(() => iframe.remove(), 1500);
+  };
+}
+
 function launchConfetti() {
   const canvas = $('confetti');
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const pieces = Array.from({ length: 60 }, () => ({
+  if (_confettiFrame) cancelAnimationFrame(_confettiFrame);
+
+  const pieces = Array.from({ length: 24 }, () => ({
     x: Math.random() * canvas.width,
     y: -10,
     w: Math.random() * 10 + 4,
@@ -1737,7 +1723,6 @@ function launchConfetti() {
     drot: (Math.random() - .5) * 8
   }));
 
-  let frame;
   let tick = 0;
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1751,11 +1736,13 @@ function launchConfetti() {
       p.x += p.vx; p.y += p.vy; p.rot += p.drot; p.vy += .08;
     });
     tick++;
-    if (tick < 90) frame = requestAnimationFrame(draw);
-    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (tick < 60) {
+      _confettiFrame = requestAnimationFrame(draw);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      _confettiFrame = null;
+    }
   }
-  cancelAnimationFrame(frame);
-  tick = 0;
   draw();
 }
 
@@ -1899,6 +1886,8 @@ function openMysteryConfigurator(product) {
   safeModal($('comboDialog'));
 }
 
+const COMBO_STEPS = ['drink', 'side', 'dessert', 'mods'];
+
 function openComboConfigurator(product, mode = 'combo') {
   const isSolo = mode === 'solo';
   comboState = {
@@ -1906,10 +1895,18 @@ function openComboConfigurator(product, mode = 'combo') {
     drink:   isSolo ? DRINKS_OPTIONS[0] : null,  // 'none' preselected for solo
     side:    isSolo ? SIDES_OPTIONS[0]  : null,   // 'none' preselected for solo
     dessert: isSolo ? DESSERT_OPTIONS[0]: null,   // 'none' preselected for solo
-    mods: [], qty: 1
+    mods: [], qty: 1, step: 0
   };
   renderComboDialog();
   safeModal($('comboDialog'));
+}
+
+function comboStepBlockMsg(stepKey) {
+  if (comboState.mode === 'solo') return null; // todo opcional en modo solo
+  if (stepKey === 'drink'   && !comboState.drink)   return '🥤 Elige tu bebida primero';
+  if (stepKey === 'side'    && !comboState.side)    return '🍟 Elige tu acompañamiento';
+  if (stepKey === 'dessert' && !comboState.dessert) return '🍦 Elige el postre';
+  return null;
 }
 
 function optPrice(opt, field) {
@@ -1994,6 +1991,20 @@ function renderComboDialog() {
     </button>
   `).join('');
 
+  const stepIdx  = comboState.step;
+  const stepKey  = COMBO_STEPS[stepIdx];
+  const isLast   = stepIdx === COMBO_STEPS.length - 1;
+
+  const stepSection = {
+    drink:   `<h3>${t('chooseDrink')} ${!isSolo ? '<span class="combo-required">*</span>' : ''}</h3><div class="combo-options">${drinkHtml}</div>`,
+    side:    `<h3>${t('chooseSide')} ${!isSolo ? '<span class="combo-required">*</span>' : ''}</h3><div class="combo-options">${sideHtml}</div>`,
+    dessert: `<h3>${t('chooseDessert')} ${!isSolo ? '<span class="combo-required">*</span>' : ''}</h3><div class="combo-options">${dessertHtml}</div>`,
+    mods:    `<h3>${t('customizeBurger')}</h3><div class="combo-mods">${modsHtml}</div>`,
+  }[stepKey];
+
+  const dotsHtml = COMBO_STEPS.map((_, i) => `<span class="combo-step-dot ${i === stepIdx ? 'active' : i < stepIdx ? 'done' : ''}"></span>`).join('');
+  const blockMsg = comboStepBlockMsg(stepKey);
+
   $('comboContent').innerHTML = `
     <div class="combo-hero">
       ${p.img ? `<img referrerpolicy="no-referrer" src="${p.img}" alt="${pName(p)}">` : `<span style="font-size:5rem">🍔</span>`}
@@ -2002,43 +2013,33 @@ function renderComboDialog() {
       <div class="combo-name" id="comboTitle">${pName(p)}</div>
       <div class="combo-desc">${pDesc(p)}</div>
 
-      <div class="combo-section">
-        <h3>${t('chooseDrink')} ${!isSolo ? '<span class="combo-required">*</span>' : ''}</h3>
-        <div class="combo-options">${drinkHtml}</div>
-      </div>
+      <div class="combo-steps-dots">${dotsHtml}</div>
 
-      <div class="combo-section">
-        <h3>${t('chooseSide')} ${!isSolo ? '<span class="combo-required">*</span>' : ''}</h3>
-        <div class="combo-options">${sideHtml}</div>
-      </div>
+      <div class="combo-section combo-step-section">${stepSection}</div>
 
-      <div class="combo-section">
-        <h3>${t('chooseDessert')} ${!isSolo ? '<span class="combo-required">*</span>' : ''}</h3>
-        <div class="combo-options">${dessertHtml}</div>
-      </div>
-
-      <div class="combo-section">
-        <h3>${t('customizeBurger')}</h3>
-        <div class="combo-mods">${modsHtml}</div>
-      </div>
-
-      <div class="pd-qty-row">
-        <span class="pd-qty-label">${t('quantity')}</span>
-        <div class="pd-qty-ctrl">
-          <button class="pd-qty-btn" id="comboQtyMinus" type="button">−</button>
-          <span class="pd-qty-val" id="comboQtyVal">${comboState.qty}</span>
-          <button class="pd-qty-btn" id="comboQtyPlus" type="button">+</button>
+      ${isLast ? `
+        <div class="pd-qty-row">
+          <span class="pd-qty-label">${t('quantity')}</span>
+          <div class="pd-qty-ctrl">
+            <button class="pd-qty-btn" id="comboQtyMinus" type="button">−</button>
+            <span class="pd-qty-val" id="comboQtyVal">${comboState.qty}</span>
+            <button class="pd-qty-btn" id="comboQtyPlus" type="button">+</button>
+          </div>
         </div>
-      </div>
+      ` : ''}
     </div>
     <div class="combo-footer">
       <div class="combo-total-row">
         <span class="combo-total-label">${t('comboTotalLabel')}</span>
         <span class="combo-total-price" id="comboTotalPrice">${EUR.format(comboTotal())}</span>
       </div>
-      <button class="btn-add-cart" id="btnAddCombo" type="button" ${!comboReady() ? 'disabled' : ''}>
-        ${comboBlockMsg() ?? `${t('addCombo')} ${EUR.format(comboTotal())}`}
-      </button>
+      <div class="combo-step-nav">
+        ${stepIdx > 0 ? `<button class="btn-secondary combo-step-back" id="btnComboBack" type="button">← Volver</button>` : ''}
+        ${isLast
+          ? `<button class="btn-add-cart" id="btnAddCombo" type="button" ${!comboReady() ? 'disabled' : ''}>${comboBlockMsg() ?? `${t('addCombo')} ${EUR.format(comboTotal())}`}</button>`
+          : `<button class="btn-add-cart" id="btnComboNext" type="button" ${blockMsg ? 'disabled' : ''}>${blockMsg ?? 'Siguiente →'}</button>`
+        }
+      </div>
     </div>
   `;
 
@@ -2046,8 +2047,7 @@ function renderComboDialog() {
   $('comboContent').querySelectorAll('[data-drink]').forEach(btn => {
     btn.addEventListener('click', () => {
       comboState.drink = DRINKS_OPTIONS.find(d => d.id === btn.dataset.drink);
-      updateComboPrices();
-      $('comboContent').querySelectorAll('[data-drink]').forEach(b => b.classList.toggle('selected', b.dataset.drink === btn.dataset.drink));
+      renderComboDialog();
     });
   });
 
@@ -2055,8 +2055,7 @@ function renderComboDialog() {
   $('comboContent').querySelectorAll('[data-side]').forEach(btn => {
     btn.addEventListener('click', () => {
       comboState.side = SIDES_OPTIONS.find(s => s.id === btn.dataset.side);
-      updateComboPrices();
-      $('comboContent').querySelectorAll('[data-side]').forEach(b => b.classList.toggle('selected', b.dataset.side === btn.dataset.side));
+      renderComboDialog();
     });
   });
 
@@ -2064,8 +2063,7 @@ function renderComboDialog() {
   $('comboContent').querySelectorAll('[data-dessert]').forEach(btn => {
     btn.addEventListener('click', () => {
       comboState.dessert = DESSERT_OPTIONS.find(d => d.id === btn.dataset.dessert);
-      updateComboPrices();
-      $('comboContent').querySelectorAll('[data-dessert]').forEach(b => b.classList.toggle('selected', b.dataset.dessert === btn.dataset.dessert));
+      renderComboDialog();
     });
   });
 
@@ -2080,22 +2078,35 @@ function renderComboDialog() {
     });
   });
 
-  // Bind qty
-  $('comboQtyMinus').addEventListener('click', () => { if (comboState.qty > 1) { comboState.qty--; updateComboPrices(); } });
-  $('comboQtyPlus').addEventListener('click',  () => { if (comboState.qty < 9) { comboState.qty++; updateComboPrices(); } });
+  // Navegación entre pasos
+  if (stepIdx > 0) {
+    $('btnComboBack').addEventListener('click', () => { comboState.step--; renderComboDialog(); });
+  }
+  if (!isLast) {
+    $('btnComboNext').addEventListener('click', () => {
+      if (comboStepBlockMsg(stepKey)) return;
+      comboState.step++;
+      renderComboDialog();
+    });
+  }
 
-  // Bind add
-  $('btnAddCombo').addEventListener('click', () => {
-    if (!comboReady()) return;
-    const note = [
-      comboState.drink?.id !== 'none'    ? `Bebida: ${comboState.drink.label}` : '',
-      comboState.side?.id   !== 'none'   ? `Acomp: ${comboState.side.label}`   : '',
-      comboState.dessert?.id !== 'none'  ? `Postre: ${comboState.dessert.label}` : ''
-    ].filter(Boolean).join(' · ');
+  // Bind qty (solo existe en el último paso)
+  if (isLast) {
+    $('comboQtyMinus').addEventListener('click', () => { if (comboState.qty > 1) { comboState.qty--; updateComboPrices(); } });
+    $('comboQtyPlus').addEventListener('click',  () => { if (comboState.qty < 9) { comboState.qty++; updateComboPrices(); } });
 
-    addToCart(comboState.product, comboState.mods, comboState.qty, note);
-    safeClose($('comboDialog'));
-  });
+    $('btnAddCombo').addEventListener('click', () => {
+      if (!comboReady()) return;
+      const note = [
+        comboState.drink?.id !== 'none'    ? `Bebida: ${comboState.drink.label}` : '',
+        comboState.side?.id   !== 'none'   ? `Acomp: ${comboState.side.label}`   : '',
+        comboState.dessert?.id !== 'none'  ? `Postre: ${comboState.dessert.label}` : ''
+      ].filter(Boolean).join(' · ');
+
+      addToCart(comboState.product, comboState.mods, comboState.qty, note);
+      safeClose($('comboDialog'));
+    });
+  }
 }
 
 function updateComboPrices() {
