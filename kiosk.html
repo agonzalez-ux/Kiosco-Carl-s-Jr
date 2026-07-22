@@ -17,7 +17,7 @@
   <section id="welcome" class="welcome" aria-label="Bienvenida">
     <div class="welcome-bg"></div>
     <div class="welcome-content">
-      <img referrerpolicy="no-referrer" src="./logo-carlsjr.svg" alt="Carl's Jr" class="welcome-logo" onerror="this.style.display='none'" />
+      <img referrerpolicy="no-referrer" src="./logo-carlsjr.png" alt="Carl's Jr" class="welcome-logo" onerror="this.style.display='none'" />
 
       <!-- Selector de idioma -->
       <div class="lang-switcher">
@@ -46,8 +46,8 @@
         <p class="welcome-eyebrow" data-i18n="eyebrow">Bigger. Better. Burgers.</p>
         <h1 class="welcome-title" data-i18n="title">Haz tu pedido<br>a lo grande</h1>
       </div>
-      <button id="btnStart" class="btn-start" type="button" data-i18n="btnGuest">
-        Continuar sin cuenta
+      <button id="btnStart" class="btn-start" type="button">
+        <span class="btn-start-inner" data-i18n="btnGuest">Continuar sin cuenta</span>
       </button>
     </div>
   </section>
@@ -58,8 +58,7 @@
     <!-- TOPBAR -->
     <header class="topbar">
       <button id="btnBackToWelcome" class="topbar-logo" type="button" aria-label="Inicio">
-        <img referrerpolicy="no-referrer" src="./logo-carlsjr.svg" alt="Carl's Jr" class="topbar-logo-img" onerror="this.style.display='none'" />
-        <span class="topbar-logo-text">Carl's Jr</span>
+        <img referrerpolicy="no-referrer" src="./logo-carlsjr.png" alt="Carl's Jr" class="topbar-logo-img" onerror="this.style.display='none'" />
       </button>
       <div class="topbar-points" id="pointsDisplay" aria-label="Tus puntos">
         <span class="points-icon">⭐</span>

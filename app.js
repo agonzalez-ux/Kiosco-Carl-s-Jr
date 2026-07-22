@@ -327,9 +327,9 @@ const MODIFIERS = [
 ];
 
 const PAYMENT_METHODS = [
-  { id: 'card',    label: 'Tarjeta',     icon: '💳' },
-  { id: 'apple',   label: 'Apple Pay',   icon: '🍎' },
-  { id: 'google',  label: 'Google Pay',  icon: '🔵' },
+  { id: 'card',    label: 'Tarjeta',     img: './pay-card.png' },
+  { id: 'apple',   label: 'Apple Pay',   img: './pay-apple.png' },
+  { id: 'google',  label: 'Google Pay',  img: './pay-google.png' },
 ];
 
 // ── STRIPE CONFIG ──────────────────────────────────────────────
@@ -1403,7 +1403,7 @@ function renderPaymentGrid() {
   if ($('backOrderBtn')) $('backOrderBtn').textContent = t('backOrder');
   $('paymentGrid').innerHTML = PAYMENT_METHODS.map(m => `
     <button class="pay-method ${state.payment === m.id ? 'selected' : ''}" data-pay="${m.id}" type="button">
-      <span class="pay-icon">${m.icon}</span>${t(PAY_LABEL_KEYS[m.id]) || m.label}
+      <img class="pay-icon" src="${m.img}" alt="${t(PAY_LABEL_KEYS[m.id]) || m.label}">
     </button>
   `).join('');
   $('paymentGrid').querySelectorAll('[data-pay]').forEach(btn => {
@@ -1452,7 +1452,7 @@ function _mountStripeElement() {
       stripePayEl = stripeElements.create('payment', {
         terms: { card: 'never' },
         wallets: { link: 'never', applePay: 'never', googlePay: 'never' },
-        fields: { billingDetails: 'never' },
+        fields: { billingDetails: { address: { country: 'never' } } },
       });
       stripePayEl.mount('#stripe-payment-element');
     })
