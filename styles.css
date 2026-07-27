@@ -880,10 +880,11 @@ a { -webkit-tap-highlight-color: transparent; }
 
 .combo-mods { display: flex; flex-wrap: wrap; gap: 8px; }
 .combo-mod {
-  background: var(--dark3); border: 1.5px solid var(--dark3);
+  background: #333; border: 1.5px solid #444;
   border-radius: var(--radius-sm); padding: 8px 14px;
-  font-size: .8rem; font-weight: 600; color: #ddd; cursor: pointer; transition: all .15s;
+  font-size: .8rem; font-weight: 700; color: #fff; cursor: pointer; transition: all .15s;
 }
+.combo-mod:hover { border-color: #666; background: #3a3a3a; }
 .combo-mod.active { border-color: var(--yellow); background: #1a1200; color: var(--yellow); }
 
 .combo-footer { padding: 0 20px 32px; }
