@@ -222,8 +222,8 @@
     /* ── ORDER CARD ── */
     .order-card {
       background: var(--card-bg);
-      border-radius: 14px;
-      padding: 10px 12px 8px;
+      border-radius: 12px;
+      padding: 8px 10px 6px;
       position: relative;
       overflow: hidden;
       border: 2px solid transparent;
@@ -333,23 +333,23 @@
 
     /* ── STATUS TEXT ── */
     .status-label {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       letter-spacing: .5px;
       text-transform: uppercase;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
 
     .status-label.preparing { color: #ff6600; }
-    .status-label.ready     { color: var(--green); font-size: 12px; }
+    .status-label.ready     { color: var(--green); font-size: 11px; }
 
     /* ── PROGRESS BAR ── */
     .progress-wrap {
       background: #2a2a2a;
       border-radius: 100px;
-      height: 5px;
+      height: 4px;
       overflow: hidden;
-      margin-bottom: 6px;
+      margin-bottom: 0;
     }
 
     .progress-bar {
@@ -553,12 +553,6 @@ function renderEmpty() {
 
 function renderCard(order) {
   const meta = statusMeta(order.status);
-  const itemsHtml = (order.items || []).map(it => `
-    <li>
-      <span class="item-qty">${it.qty}×</span>
-      <span class="item-name">${it.name}</span>
-      ${it.mods ? `<span class="item-mods">${it.mods}</span>` : ''}
-    </li>`).join('');
 
   return `
     <article class="order-card ${order.status}" data-id="${order.id}">
@@ -574,7 +568,6 @@ function renderCard(order) {
       <div class="progress-wrap">
         <div class="progress-bar ${order.status}"></div>
       </div>
-      ${itemsHtml ? `<hr class="items-divider"><ul class="items-list">${itemsHtml}</ul>` : ''}
     </article>`;
 }
 
