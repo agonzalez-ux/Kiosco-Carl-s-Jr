@@ -297,12 +297,14 @@
     }
 
     .btn-complete {
-      width: 100%; padding: 20px;
+      padding: 20px 24px;
       font-family: var(--font-head); font-size: 1.4rem; letter-spacing: .06em; text-transform: uppercase;
       background: var(--red); color: #fff; border-radius: 12px;
       box-shadow: 0 8px 32px rgba(204,0,0,.5);
       transition: transform .1s, box-shadow .1s;
       cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
     .btn-complete:hover { transform: scale(1.02); box-shadow: 0 12px 40px rgba(204,0,0,.6); }
     .btn-complete:active { transform: scale(.97); }

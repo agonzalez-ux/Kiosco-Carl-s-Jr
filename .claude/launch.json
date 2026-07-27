@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "carls-jr-kiosk",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3877", "."],
+      "port": 3877
+    }
+  ]
+}
