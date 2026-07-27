@@ -1771,9 +1771,19 @@ function printReceipt(bodyHtml) {
   doc.close();
 
   iframe.onload = () => {
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
-    setTimeout(() => iframe.remove(), 1500);
+    const win = iframe.contentWindow;
+    win.focus();
+    win.print();
+
+    win.addEventListener('afterprint', () => {
+      setTimeout(() => iframe.remove(), 300);
+    });
+
+    setTimeout(() => {
+      if (document.getElementById('print-frame')) {
+        iframe.remove();
+      }
+    }, 2000);
   };
 }
 
