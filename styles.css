@@ -882,7 +882,7 @@ a { -webkit-tap-highlight-color: transparent; }
 .combo-mod {
   background: var(--dark3); border: 1.5px solid var(--dark3);
   border-radius: var(--radius-sm); padding: 8px 14px;
-  font-size: .8rem; cursor: pointer; transition: all .15s;
+  font-size: .8rem; font-weight: 600; color: #ddd; cursor: pointer; transition: all .15s;
 }
 .combo-mod.active { border-color: var(--yellow); background: #1a1200; color: var(--yellow); }
 

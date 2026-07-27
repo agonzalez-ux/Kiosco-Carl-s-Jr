@@ -127,18 +127,23 @@ const CJSync = (function () {
     return ready;
   }
 
-  /* ── Reiniciar todo (fin de jornada): borra pedidos y contador, local y remoto ── */
+  /* ── Reiniciar todo (fin de jornada): borra pedidos y contador, local y remoto ──
+     Devuelve una Promise: hay que esperarla antes de recargar la página, si no
+     la navegación cancela la escritura a Firebase a mitad de camino y otros
+     dispositivos (kiosco, pantalla de clientes) nunca reciben el reset. */
   function resetAll() {
     _init();
     try {
       localStorage.removeItem(LS_ORDERS);
       localStorage.removeItem(LS_NUM);
     } catch (_) {}
-    if (!ready) return;
-    db.ref(FB_PATH + '/orders').set({ data: JSON.stringify([]), ts: Date.now() })
-      .catch(e => console.warn('[CJSync] resetAll orders error:', e));
-    db.ref(FB_PATH + '/orderNum').set(0)
-      .catch(e => console.warn('[CJSync] resetAll orderNum error:', e));
+    if (!ready) return Promise.resolve();
+    return Promise.all([
+      db.ref(FB_PATH + '/orders').set({ data: JSON.stringify([]), ts: Date.now() })
+        .catch(e => console.warn('[CJSync] resetAll orders error:', e)),
+      db.ref(FB_PATH + '/orderNum').set(0)
+        .catch(e => console.warn('[CJSync] resetAll orderNum error:', e)),
+    ]);
   }
 
   return { saveOrders, nextOrderNum, onOrdersChange, isEnabled, resetAll };

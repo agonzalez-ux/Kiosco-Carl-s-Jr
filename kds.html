@@ -1722,8 +1722,7 @@
     document.getElementById('btnPodiumClose').addEventListener('click', () => {
       localStorage.removeItem(STORAGE_WORKERS);
       localStorage.removeItem(STORAGE_ORDERS);
-      CJSync.resetAll();
-      window.location.reload();
+      Promise.resolve(CJSync.resetAll()).finally(() => window.location.reload());
     });
 
     /* ── MISC ── */
