@@ -955,6 +955,7 @@
     /* ── STATE ── */
     let currentWorker = null;
     let activeOrderId = null;
+    let activeOrderTs = null;
     let activeStartTime = null;
     let timerInterval  = null;
 
@@ -1265,7 +1266,7 @@
         const diff = calcDifficulty(order);
         const cfg  = DIFF_CONFIG[diff];
         const itemSummary = order.items.map(i => `${i.qty}× ${i.name}`).join(', ');
-        const isActive = order.id === activeOrderId;
+        const isActive = order.timestamp === activeOrderTs;
 
         const card = document.createElement('div');
         card.className = 'q-card' + (isActive ? ' selected' : '');
@@ -1289,17 +1290,18 @@
     function startOrder(order) {
       if (activeOrderId) {
         const orders = getOrders();
-        const prev = orders.find(o => o.id === activeOrderId);
+        const prev = orders.find(o => o.timestamp === activeOrderTs);
         if (prev && prev.status === 'preparing') {
           if (!confirm(`Hay un pedido en preparación (#${activeOrderId}). ¿Pasar al siguiente de todos modos?`)) return;
         }
       }
       // Mark as preparing
       const orders = getOrders();
-      const o = orders.find(o => o.id === order.id);
+      const o = orders.find(o => o.timestamp === order.timestamp);
       if (o) { o.status = 'preparing'; o.preparingAt = Date.now(); saveOrders(orders); }
 
       activeOrderId  = order.id;
+      activeOrderTs  = order.timestamp;
       activeStartTime = Date.now();
       clearInterval(timerInterval);
 
@@ -1536,11 +1538,12 @@
 
       // Reset active before saveOrders so Firebase onOrdersChange doesn't block on activeOrderId
       activeOrderId   = null;
+      activeOrderTs   = null;
       activeStartTime = null;
 
-      // Save to orders
+      // Save to orders (match by timestamp: los ids de pedido se reciclan cada 200 y pueden repetirse)
       const orders = getOrders();
-      const o = orders.find(o => o.id === order.id);
+      const o = orders.find(o => o.timestamp === order.timestamp);
       if (o) { o.status = 'ready'; o.readyAt = Date.now(); o.pts = pts; o.perf = perf; o.elapsed = elapsed; saveOrders(orders); }
 
       // Update worker points
@@ -1783,12 +1786,13 @@
 
         // Assign abandoned order to a rival so it gets done ASAP
         if (activeOrderId) {
-          const abandonedId = activeOrderId;
+          const abandonedTs = activeOrderTs;
           const orders = getOrders();
-          const o = orders.find(x => x.id === abandonedId);
+          const o = orders.find(x => x.timestamp === abandonedTs);
           clearInterval(timerInterval);
           timerInterval   = null;
           activeOrderId   = null;
+          activeOrderTs   = null;
           activeStartTime = null;
 
           if (o) {
@@ -1805,7 +1809,7 @@
             const simTime = Math.round(cfg.time * (0.60 + Math.random() * 0.50));
             setTimeout(() => {
               const current = getOrders();
-              const completing = current.find(x => x.id === abandonedId);
+              const completing = current.find(x => x.timestamp === abandonedTs);
               if (completing && completing.status === 'rival_preparing') {
                 completing.status = 'ready';
                 const pts = calcPoints(simTime, diff);
