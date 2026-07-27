@@ -207,8 +207,22 @@
     .active-timer-panel {
       background: var(--card); border-left: 2px solid var(--border);
       display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-      padding: 28px 24px; gap: 20px;
-      min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 0; gap: 0;
+      min-height: 0; overflow: hidden;
+    }
+
+    .timer-content {
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      padding: 28px 24px; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      min-height: 0;
+    }
+
+    .btn-complete {
+      flex-shrink: 0;
+      padding: 16px 24px;
+      margin: 0;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .timer-ring-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
@@ -1379,41 +1393,43 @@
           </div>
 
           <div class="active-timer-panel">
-            <div>
-              <div style="text-align:center;font-size:.65rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--mid);margin-bottom:12px">Tiempo objetivo</div>
-              <div class="timer-ring-wrap">
-                <svg class="timer-ring" width="140" height="140" viewBox="0 0 140 140">
-                  <circle class="timer-ring-bg" cx="70" cy="70" r="54"/>
-                  <circle class="timer-ring-fill green" id="timerRingFill" cx="70" cy="70" r="54"
-                    stroke-dasharray="${circumference}" stroke-dashoffset="0"/>
-                </svg>
-                <div class="timer-inner">
-                  <div class="timer-display" id="timerDisplay">--:--</div>
-                  <div class="timer-status-label perfect" id="timerStatusLbl">¡PERFECTO!</div>
+            <div class="timer-content">
+              <div>
+                <div style="text-align:center;font-size:.65rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--mid);margin-bottom:12px">Tiempo objetivo</div>
+                <div class="timer-ring-wrap">
+                  <svg class="timer-ring" width="140" height="140" viewBox="0 0 140 140">
+                    <circle class="timer-ring-bg" cx="70" cy="70" r="54"/>
+                    <circle class="timer-ring-fill green" id="timerRingFill" cx="70" cy="70" r="54"
+                      stroke-dasharray="${circumference}" stroke-dashoffset="0"/>
+                  </svg>
+                  <div class="timer-inner">
+                    <div class="timer-display" id="timerDisplay">--:--</div>
+                    <div class="timer-status-label perfect" id="timerStatusLbl">¡PERFECTO!</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="timer-objective">
-              <div class="timer-objective-lbl">Objetivo</div>
-              <div class="timer-objective-val" id="timerObjective">${formatTime(cfg.time)}</div>
-            </div>
-
-            <div class="speed-bar-wrap">
-              <div class="speed-zones">
-                <div class="speed-zone-g"></div>
-                <div class="speed-zone-y"></div>
-                <div class="speed-zone-r"></div>
-                <div class="speed-cursor zone-g" id="speedCursor" style="left:0%"></div>
+              <div class="timer-objective">
+                <div class="timer-objective-lbl">Objetivo</div>
+                <div class="timer-objective-val" id="timerObjective">${formatTime(cfg.time)}</div>
               </div>
-              <div class="speed-labels">
-                <span class="speed-label-g">🚀 Perfecto</span>
-                <span class="speed-label-y">👍 OK</span>
-                <span class="speed-label-r">⚠️ Tarde</span>
-              </div>
-            </div>
 
-            <div class="live-preview perfect" id="livePreview"><span class="live-emoji">😄</span><span class="live-pts">+${cfg.pts} pts</span></div>
+              <div class="speed-bar-wrap">
+                <div class="speed-zones">
+                  <div class="speed-zone-g"></div>
+                  <div class="speed-zone-y"></div>
+                  <div class="speed-zone-r"></div>
+                  <div class="speed-cursor zone-g" id="speedCursor" style="left:0%"></div>
+                </div>
+                <div class="speed-labels">
+                  <span class="speed-label-g">🚀 Perfecto</span>
+                  <span class="speed-label-y">👍 OK</span>
+                  <span class="speed-label-r">⚠️ Tarde</span>
+                </div>
+              </div>
+
+              <div class="live-preview perfect" id="livePreview"><span class="live-emoji">😄</span><span class="live-pts">+${cfg.pts} pts</span></div>
+            </div>
 
             <button class="btn-complete" id="btnComplete">✓ ¡Pedido listo!</button>
           </div>
