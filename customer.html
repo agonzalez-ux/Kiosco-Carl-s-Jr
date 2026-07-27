@@ -165,9 +165,10 @@
       flex: 1;
       overflow-y: auto;
       padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-content: start;
+      gap: 8px;
     }
 
     /* ── EMPTY STATE ── */
@@ -206,6 +207,7 @@
     }
 
     .col-empty {
+      grid-column: 1 / -1;
       text-align: center;
       padding: 48px 20px;
       color: #333;
