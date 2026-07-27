@@ -206,23 +206,24 @@
     /* Right: timer + action */
     .active-timer-panel {
       background: var(--card); border-left: 2px solid var(--border);
-      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-      padding: 0; gap: 0;
+      display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+      padding: 0; gap: 8px;
       min-height: 0; overflow: hidden;
     }
 
     .timer-content {
-      display: flex; flex-direction: column; align-items: center; gap: 20px;
-      padding: 28px 24px; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      padding: 20px 24px 0; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
       min-height: 0;
     }
 
     .btn-complete {
       flex-shrink: 0;
-      padding: 16px 24px;
-      margin: 0;
-      width: 100%;
-      box-sizing: border-box;
+      padding: 14px 20px;
+      margin: 0 8px 8px 8px;
+      width: auto;
+      align-self: center;
+      min-width: 180px;
     }
 
     .timer-ring-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
