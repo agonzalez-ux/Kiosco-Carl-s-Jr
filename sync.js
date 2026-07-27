@@ -127,5 +127,19 @@ const CJSync = (function () {
     return ready;
   }
 
-  return { saveOrders, nextOrderNum, onOrdersChange, isEnabled };
+  /* ── Reiniciar todo (fin de jornada): borra pedidos y contador, local y remoto ── */
+  function resetAll() {
+    _init();
+    try {
+      localStorage.removeItem(LS_ORDERS);
+      localStorage.removeItem(LS_NUM);
+    } catch (_) {}
+    if (!ready) return;
+    db.ref(FB_PATH + '/orders').set({ data: JSON.stringify([]), ts: Date.now() })
+      .catch(e => console.warn('[CJSync] resetAll orders error:', e));
+    db.ref(FB_PATH + '/orderNum').set(0)
+      .catch(e => console.warn('[CJSync] resetAll orderNum error:', e));
+  }
+
+  return { saveOrders, nextOrderNum, onOrdersChange, isEnabled, resetAll };
 })();
