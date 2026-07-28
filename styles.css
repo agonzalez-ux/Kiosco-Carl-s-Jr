@@ -72,60 +72,18 @@ a { -webkit-tap-highlight-color: transparent; }
 }
 .welcome.out { opacity: 0; transform: scale(1.04); pointer-events: none; }
 
-.welcome-bg {
+.welcome-cover {
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 50% 100%, #CC000033 0%, transparent 70%);
-  pointer-events: none;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
 }
 
-.welcome-content {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 20px;
-  padding: 40px 24px; width: 100%; max-width: 480px;
+.welcome-tap-overlay {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  background: transparent; border: none; padding: 0; margin: 0;
+  cursor: pointer; z-index: 2;
 }
-.welcome-logo {
-  width: 170px; padding: 10px 16px; background: var(--white);
-  border-radius: 14px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.35));
-}
-
-/* Welcome Slider (coverflow) */
-.welcome-slider {
-  width: 100vw; position: relative;
-  height: min(310px, 68vw);
-  overflow: hidden;
-}
-.ws-slide {
-  position: absolute;
-  top: 0; left: 50%;
-  width: min(290px, 64vw);
-  height: 100%;
-  object-fit: contain;
-  transform-origin: center center;
-  transition: transform .7s cubic-bezier(.25, .46, .45, .94),
-              opacity   .7s cubic-bezier(.25, .46, .45, .94);
-  opacity: 0;
-  pointer-events: none;
-  filter: drop-shadow(0 12px 32px rgba(0,0,0,.7));
-}
-.ws-slide.center {
-  filter: drop-shadow(0 20px 56px rgba(204,0,0,.55))
-          drop-shadow(0 8px 24px rgba(0,0,0,.8));
-}
-.ws-dots {
-  position: absolute; bottom: 2px; left: 0; right: 0;
-  display: flex; justify-content: center; gap: 6px;
-}
-.ws-dot {
-  width: 6px; height: 6px; border-radius: 99px;
-  background: var(--dark3); border: none; cursor: none;
-  transition: all .3s ease;
-}
-.ws-dot.active { width: 22px; background: var(--red); }
-
-.welcome-text { text-align: center; }
-.welcome-eyebrow { font-family: var(--font-head); font-size: 1rem; letter-spacing: .15em; color: var(--yellow); text-transform: uppercase; }
-.welcome-title { font-family: var(--font-head); font-size: clamp(2.4rem, 8vw, 3.6rem); line-height: 1; color: var(--white); text-transform: uppercase; text-shadow: 0 4px 20px rgba(204,0,0,.7); }
 
 .btn-start {
   background: var(--red);
@@ -1167,14 +1125,6 @@ a { -webkit-tap-highlight-color: transparent; }
   .cat-tab .cat-icon { font-size: 1.7rem; }
   .cat-nav-ai { font-size: .8rem; padding: 12px 8px; }
 
-  /* Welcome */
-  .welcome-content { max-width: 700px; gap: 28px; padding: 48px 32px; }
-  .welcome-logo { width: 160px; }
-  .welcome-eyebrow { font-size: 1.2rem; }
-  .welcome-title { font-size: clamp(3.5rem, 7vw, 5rem); }
-  .welcome-slider { height: min(420px, 50vw); }
-  .ws-slide { width: min(380px, 50vw); }
-  .btn-start-inner { font-size: 1.9rem; padding: 24px 72px; }
   .btn-guest { font-size: 1.1rem; padding: 18px 40px; }
 
   /* Product grid — 3 columnas a 1080px */
