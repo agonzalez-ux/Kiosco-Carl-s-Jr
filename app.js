@@ -760,10 +760,10 @@ function productCard(p) {
     <article class="product-card" data-product="${p.id}" role="button" tabindex="0" aria-label="${pName(p)}, ${EUR.format(p.price)}">
       ${badgeHtml}
       <div class="pc-img pc-cat-${p.cat}">${imgHtml}</div>
+      <div class="pc-podium"><div class="pc-podium-stars">${stars}</div></div>
       <div class="pc-body">
         <div class="pc-name">${pName(p)}</div>
         <div class="pc-desc">${pDesc(p)}</div>
-        <div class="pc-stars">${stars}</div>
         <div class="pc-footer">
           <span class="pc-price">${EUR.format(p.price)}</span>
           <button class="pc-add" type="button" aria-label="Añadir ${pName(p)}">+</button>
