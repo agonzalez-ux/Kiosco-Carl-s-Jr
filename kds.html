@@ -408,6 +408,10 @@
       text-shadow: 0 2px 20px rgba(255,255,255,.35);
     }
     .break-status-line { font-size: .9rem; font-weight: 600; color: #444; margin-bottom: 12px; letter-spacing: .04em; }
+    .break-timer {
+      font-family: var(--font-head); font-size: 1.6rem; letter-spacing: .06em;
+      color: var(--yellow); margin-bottom: 20px;
+    }
 
     /* ── MINI-GAME AREA ── */
     .break-game-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 16px; }
@@ -1745,7 +1749,26 @@
       const picker = document.getElementById('breakPicker');
       const screen = document.getElementById('breakScreen');
       const inner  = document.getElementById('breakScreenInner');
-      let gameInterval = null;
+      let gameInterval  = null;
+      let breakInterval = null;
+      let breakStartTime = null;
+
+      function stopBreakTimer() {
+        clearInterval(breakInterval);
+        breakInterval = null;
+      }
+
+      function startBreakTimer() {
+        stopBreakTimer();
+        breakStartTime = Date.now();
+        const tick = () => {
+          const elapsed = Math.floor((Date.now() - breakStartTime) / 1000);
+          const timerEl = document.getElementById('breakTimer');
+          if (timerEl) timerEl.textContent = formatTime(elapsed);
+        };
+        tick();
+        breakInterval = setInterval(tick, 1000);
+      }
 
       fab.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1829,6 +1852,7 @@
           <div class="break-mode-tag ${isShort ? 'short' : 'long'}">${isShort ? '🎮 BREAK CORTO' : '🍽️ PAUSA PARA COMER'}</div>
           <div class="break-worker-name">${name}</div>
           <div class="break-status-line">${isShort ? 'está en break' : 'está comiendo'}</div>
+          <div class="break-timer" id="breakTimer">00:00</div>
           <div class="break-game-wrap">
             <div class="break-game-area" id="breakGame">
               <div class="break-runner" id="breakRunner">${avatar}</div>
@@ -1837,12 +1861,14 @@
           <button class="break-resume" id="btnBreakResume">▶ Volver a cocinar</button>
         `;
         screen.hidden = false;
+        startBreakTimer();
 
         // Slight delay so DOM is ready
         setTimeout(() => startGame(avatar, isShort), 50);
 
         document.getElementById('btnBreakResume').addEventListener('click', () => {
           stopGame();
+          stopBreakTimer();
           screen.hidden = true;
           refreshHeaderPts();
           renderRanking();
