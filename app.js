@@ -2320,8 +2320,11 @@ function showToast(msg) {
     { type: 'video', src: './promo1.mp4' },
     { type: 'photo', src: './promo2.jpg', ms: 3_000 },
     { type: 'video', src: './promo3.mp4' },
-    { type: 'video', src: './promo4.mp4' },
-    { type: 'video', src: './promo6.mp4' },
+    { type: 'photo', src: './promo4.png', ms: 3_000 },
+    { type: 'video', src: './promo5.mp4' },
+    { type: 'photo', src: './promo6.png', ms: 3_000 },
+    { type: 'video', src: './promo7.mp4' },
+    { type: 'photo', src: './promo8.png', ms: 3_000 },
   ];
 
   let idleTimer     = null;
