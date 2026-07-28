@@ -1197,7 +1197,7 @@ function renderQuizStep() {
   const step = quiz[state.quizStep];
   if (!step) { renderQuizThinking(); return; }
 
-  const pct = (state.quizStep / quiz.length) * 100;
+  const pct = ((state.quizStep + 1) / quiz.length) * 100;
   $('quizBar').style.width = pct + '%';
   $('quizStep').textContent = `${state.quizStep + 1} / ${quiz.length}`;
 
