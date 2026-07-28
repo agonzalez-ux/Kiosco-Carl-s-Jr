@@ -420,7 +420,7 @@ const LANGS = {
     lsBack: '← Volver',
     catBurgers: 'Hamburguesas', catCombos: 'Menús', catSides: 'Complementos',
     catDesserts: 'Postres', catDrinks: 'Bebidas', catSalads: 'Ensaladas', catKids: 'Infantil',
-    aiBtn: '⭐ Sorpresa', aiBtnLabel: 'Sorpresa',
+    aiBtn: '✨ Sorpréndeme', aiBtnLabel: 'Sorpréndeme',
     dcTitle: 'Reto del día:', dcText: 'Toca aquí para añadir Crisscuts y ganar', dcPts: '+50 puntos',
     cartTitle: 'Tu pedido', fabCart: 'Mi pedido',
     cartEmpty: 'Tu carrito está vacío.\n¡Elige algo delicioso!',
@@ -499,7 +499,7 @@ const LANGS = {
     lsBack: '← Back',
     catBurgers: 'Burgers', catCombos: 'Combos', catSides: 'Sides',
     catDesserts: 'Desserts', catDrinks: 'Drinks', catSalads: 'Salads', catKids: 'Kids',
-    aiBtn: '⭐ Surprise', aiBtnLabel: 'Surprise',
+    aiBtn: '✨ Surprise me', aiBtnLabel: 'Surprise me',
     dcTitle: 'Daily Challenge:', dcText: 'Tap here to add Crisscuts and earn', dcPts: '+50 points',
     cartTitle: 'Your order', fabCart: 'My order',
     cartEmpty: "Your cart is empty.\nChoose something delicious!",
@@ -714,8 +714,8 @@ function renderCatNav() {
       <span>${t(CAT_LABEL_KEYS[c.id]) || c.label}</span>
     </button>
   `).join('') + `
-    <button class="cat-nav-ai" id="btnAI" type="button" aria-label="${t('aiBtn')}">
-      <img src="./star-carlsjr.png" alt="" class="cat-nav-ai-star" />
+    <button class="cat-nav-ai" id="btnAI" type="button" aria-label="${t('aiBtnLabel')}">
+      <span class="cat-nav-ai-sparkle">✨</span>
       <span>${t('aiBtnLabel')}</span>
     </button>
   `;
