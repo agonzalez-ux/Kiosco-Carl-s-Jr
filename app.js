@@ -671,14 +671,13 @@ function initSlider() {
       if (d < -total / 2) d += total;
 
       const absD = Math.abs(d);
-      const scale  = absD === 0 ? 1 : absD === 1 ? 0.68 : 0.5;
-      const opacity = absD === 0 ? 1  : absD === 1 ? 0.6  : absD === 2 ? 0.3 : 0;
+      const scale  = absD === 0 ? 1 : absD === 1 ? 0.82 : 0.6;
+      const opacity = absD === 0 ? 1  : absD === 1 ? 1  : absD === 2 ? 0.4 : 0;
       const zIndex  = 10 - absD;
 
       // Centro de cada slide relativo al centro del contenedor
-      // slide width = 54vw, gap entre centros = 52% del contenedor
-      const slideW = slide.offsetWidth || W * 0.54;
-      const offset = d * (W * 0.44);
+      // Los laterales se empujan casi hasta el borde de la pantalla (recortados)
+      const offset = d * (W * 0.5);
 
       slide.style.transform  = `translateX(calc(-50% + ${offset}px)) scale(${scale})`;
       slide.style.opacity    = opacity;

@@ -16,39 +16,39 @@
   <!-- ───────────── PANTALLA DE BIENVENIDA ───────────── -->
   <section id="welcome" class="welcome" aria-label="Bienvenida">
     <div class="welcome-bg"></div>
-    <div class="welcome-content">
-      <!-- Selector de idioma -->
-      <div class="lang-switcher">
-        <button id="btnLangEs" class="lang-btn lang-mx active" data-lang="es" type="button" title="Español">
-          <span class="lang-flag"></span>
-          <span class="lang-label">ES</span>
-        </button>
-        <button id="btnLangEn" class="lang-btn lang-us" data-lang="en" type="button" title="English">
-          <span class="lang-flag"></span>
-          <span class="lang-label">EN</span>
-        </button>
-      </div>
+    <div class="welcome-console"></div>
 
-      <!-- Pedestal giratorio con hamburguesas rotando (coverflow) -->
-      <div class="welcome-stage" id="welcomeSlider" aria-hidden="true">
-        <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2025/06/Single-BaconCheese-Gran-Angus_500x500px.png" alt="">
-        <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2023/04/Diseno-sin-titulo-2024-06-19T125728.106.png" alt="">
-        <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2023/04/Western-Bacon-Cheeseburger-nueva.png" alt="">
-        <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2025/12/Bacon_trufa_single.png" alt="">
-        <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2023/04/Diseno-sin-titulo-2024-05-30T111453.743.png" alt="">
-        <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2023/03/Moving-Mountains-Famous-Star-1.png" alt="">
-        <div class="welcome-platform"></div>
-        <div class="ws-dots" id="wsDots"></div>
-      </div>
-
-      <div class="welcome-text">
-        <p class="welcome-eyebrow" data-i18n="eyebrow">Bigger. Better. Burgers.</p>
-        <h1 class="welcome-title" data-i18n="title">Haz tu pedido<br>a lo grande</h1>
-      </div>
-      <button id="btnStart" class="btn-start" type="button">
-        <span class="btn-start-inner" data-i18n="btnGuest">Continuar sin cuenta</span>
+    <!-- Selector de idioma -->
+    <div class="lang-switcher welcome-lang">
+      <button id="btnLangEs" class="lang-btn lang-mx active" data-lang="es" type="button" title="Español">
+        <span class="lang-flag"></span>
+        <span class="lang-label">ES</span>
+      </button>
+      <button id="btnLangEn" class="lang-btn lang-us" data-lang="en" type="button" title="English">
+        <span class="lang-flag"></span>
+        <span class="lang-label">EN</span>
       </button>
     </div>
+
+    <!-- Pedestal giratorio con hamburguesas rotando (coverflow) -->
+    <div class="welcome-stage" id="welcomeSlider" aria-hidden="true">
+      <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2025/06/Single-BaconCheese-Gran-Angus_500x500px.png" alt="">
+      <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2023/04/Diseno-sin-titulo-2024-06-19T125728.106.png" alt="">
+      <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2023/04/Western-Bacon-Cheeseburger-nueva.png" alt="">
+      <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2025/12/Bacon_trufa_single.png" alt="">
+      <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2023/04/Diseno-sin-titulo-2024-05-30T111453.743.png" alt="">
+      <img referrerpolicy="no-referrer" class="ws-slide" src="https://carlsjr.es/wp-content/uploads/2023/03/Moving-Mountains-Famous-Star-1.png" alt="">
+    </div>
+    <div class="welcome-platform"></div>
+    <div class="ws-dots" id="wsDots"></div>
+
+    <div class="welcome-text">
+      <p class="welcome-eyebrow" data-i18n="eyebrow">Bigger. Better. Burgers.</p>
+      <h1 class="welcome-title" data-i18n="title">Haz tu pedido<br>a lo grande</h1>
+    </div>
+    <button id="btnStart" class="btn-start" type="button">
+      <span class="btn-start-inner" data-i18n="btnGuest">Continuar sin cuenta</span>
+    </button>
   </section>
 
   <!-- ───────────── APP PRINCIPAL ───────────── -->

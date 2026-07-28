@@ -63,62 +63,66 @@ button {
 }
 a { -webkit-tap-highlight-color: transparent; }
 
-/* WELCOME */
+/* WELCOME — recreacion exacta de la foto de referencia (mueble/mesa negra bajo la hamburguesa) */
 .welcome {
   position: fixed; inset: 0; z-index: 100;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  overflow: hidden;
   background: var(--black);
   transition: opacity .4s, transform .4s;
 }
 .welcome.out { opacity: 0; transform: scale(1.04); pointer-events: none; }
 
 .welcome-bg {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; z-index: 0;
   background: url('./wood-bg.png');
   background-size: 220px 220px;
 }
-.welcome-bg::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 55% at 50% 62%, rgba(204,0,0,.28) 0%, transparent 70%);
+
+/* Cuerpo/consola del mueble: ocupa la mitad inferior, con remate dorado arriba */
+.welcome-console {
+  position: absolute; z-index: 1;
+  left: 0; right: 0; top: 51%; bottom: 0;
+  background: linear-gradient(180deg, #1c1c1c 0%, #141414 8%, #0a0a0a 30%, #1a1010 75%, #2a0808 100%);
+  border-top: 4px solid #d9b04a;
+  box-shadow: 0 -2px 10px rgba(217,176,74,.5), 0 -4px 14px rgba(0,0,0,.6);
 }
 
-.welcome-content {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 18px;
-  padding: 40px 24px; width: 100%; max-width: 480px;
+/* Selector de idioma */
+.welcome .welcome-lang {
+  position: absolute; z-index: 3; top: 9%; left: 50%; right: auto;
+  transform: translateX(-50%);
 }
 
-/* Escenario / pedestal giratorio */
+/* Escenario / mesa giratoria */
 .welcome-stage {
-  position: relative; width: 100%;
-  height: min(280px, 60vw);
-  display: flex; align-items: center; justify-content: center;
+  position: absolute; z-index: 2;
+  left: 0; right: 0; top: 33%; height: 20%;
+  display: flex; align-items: flex-end; justify-content: center;
 }
 .ws-slide {
-  position: absolute; top: 0; left: 50%;
+  position: absolute; bottom: 0; left: 50%;
   height: 100%; width: auto; object-fit: contain;
-  transform-origin: center center;
+  transform-origin: bottom center;
   transition: transform .7s cubic-bezier(.25,.46,.45,.94),
               opacity   .7s cubic-bezier(.25,.46,.45,.94);
   opacity: 0; pointer-events: none;
-  filter: blur(1px) drop-shadow(0 12px 20px rgba(0,0,0,.6));
+  filter: drop-shadow(0 10px 16px rgba(0,0,0,.7));
 }
 .ws-slide.center {
-  filter: drop-shadow(0 0 34px rgba(204,0,0,.65)) drop-shadow(0 18px 30px rgba(0,0,0,.7));
+  filter: drop-shadow(0 14px 20px rgba(0,0,0,.75));
 }
 
 .welcome-platform {
-  position: absolute; z-index: 0; bottom: 4%;
-  width: 88%; height: 30px;
-  background: linear-gradient(180deg, #6b6b6b 0%, #3a3a3a 45%, #0e0e0e 100%);
-  border-radius: 50% / 40%;
-  box-shadow: 0 14px 30px rgba(0,0,0,.7), inset 0 2px 0 rgba(255,255,255,.25), inset 0 -4px 6px rgba(0,0,0,.5);
+  position: absolute; z-index: 1; left: 50%; top: 48.5%;
+  width: 108%; height: 9%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse 60% 100% at 50% 30%, #4a4a4a 0%, #1c1c1c 55%, #0a0a0a 100%);
+  border-radius: 50%;
+  box-shadow: 0 10px 22px rgba(0,0,0,.65), inset 0 3px 6px rgba(255,255,255,.12);
 }
+
 .ws-dots {
-  position: absolute; bottom: -22px; left: 0; right: 0;
+  position: absolute; z-index: 3; top: 55%; left: 0; right: 0;
   display: flex; justify-content: center; gap: 7px;
 }
 .ws-dot {
@@ -128,9 +132,17 @@ a { -webkit-tap-highlight-color: transparent; }
 }
 .ws-dot.active { background: var(--red); width: 20px; }
 
-.welcome-text { text-align: center; margin-top: 18px; }
+.welcome-text {
+  position: absolute; z-index: 3; left: 0; right: 0; top: 61%;
+  text-align: center; padding: 0 20px;
+}
 .welcome-eyebrow { font-family: var(--font-head); font-size: 1rem; letter-spacing: .15em; color: var(--yellow); text-transform: uppercase; }
-.welcome-title { font-family: var(--font-head); font-size: clamp(2.4rem, 8vw, 3.6rem); line-height: 1; color: var(--white); text-transform: uppercase; text-shadow: 0 4px 20px rgba(204,0,0,.7); }
+.welcome-title { font-family: var(--font-head); font-size: clamp(2.4rem, 8vw, 3.6rem); line-height: 1; color: var(--white); text-transform: uppercase; text-shadow: 0 0 20px rgba(255,60,60,.65); }
+
+.btn-start {
+  position: absolute; z-index: 3; left: 50%; top: 78%;
+  transform: translateX(-50%);
+}
 
 .btn-start {
   background: var(--red);
@@ -140,7 +152,7 @@ a { -webkit-tap-highlight-color: transparent; }
   animation: pulse-btn 2.4s ease-in-out infinite;
   transition: transform .15s;
 }
-.btn-start:active { transform: scale(.97); }
+.btn-start:active { transform: translateX(-50%) scale(.97); }
 @keyframes pulse-btn {
   0%,100%{ box-shadow: 0 0 0 4px #CC000044, 0 8px 32px rgba(204,0,0,.5); }
   50%{ box-shadow: 0 0 0 10px #CC000022, 0 12px 40px rgba(204,0,0,.7); }
