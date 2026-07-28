@@ -248,6 +248,7 @@ a { -webkit-tap-highlight-color: transparent; }
   transition: transform .15s;
 }
 .cat-nav-ai:active { transform: scale(.96); }
+.cat-nav-ai-star { width: 28px; height: 28px; object-fit: contain; }
 
 .cat-tab {
   flex-shrink: 0;

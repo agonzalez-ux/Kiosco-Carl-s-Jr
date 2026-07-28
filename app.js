@@ -420,7 +420,7 @@ const LANGS = {
     lsBack: '← Volver',
     catBurgers: 'Hamburguesas', catCombos: 'Menús', catSides: 'Complementos',
     catDesserts: 'Postres', catDrinks: 'Bebidas', catSalads: 'Ensaladas', catKids: 'Infantil',
-    aiBtn: '⭐ Sorpresa',
+    aiBtn: '⭐ Sorpresa', aiBtnLabel: 'Sorpresa',
     dcTitle: 'Reto del día:', dcText: 'Toca aquí para añadir Crisscuts y ganar', dcPts: '+50 puntos',
     cartTitle: 'Tu pedido', fabCart: 'Mi pedido',
     cartEmpty: 'Tu carrito está vacío.\n¡Elige algo delicioso!',
@@ -499,7 +499,7 @@ const LANGS = {
     lsBack: '← Back',
     catBurgers: 'Burgers', catCombos: 'Combos', catSides: 'Sides',
     catDesserts: 'Desserts', catDrinks: 'Drinks', catSalads: 'Salads', catKids: 'Kids',
-    aiBtn: '⭐ Surprise',
+    aiBtn: '⭐ Surprise', aiBtnLabel: 'Surprise',
     dcTitle: 'Daily Challenge:', dcText: 'Tap here to add Crisscuts and earn', dcPts: '+50 points',
     cartTitle: 'Your order', fabCart: 'My order',
     cartEmpty: "Your cart is empty.\nChoose something delicious!",
@@ -715,7 +715,8 @@ function renderCatNav() {
     </button>
   `).join('') + `
     <button class="cat-nav-ai" id="btnAI" type="button" aria-label="${t('aiBtn')}">
-      ${t('aiBtn')}
+      <img src="./star-carlsjr.png" alt="" class="cat-nav-ai-star" />
+      <span>${t('aiBtnLabel')}</span>
     </button>
   `;
   $('catNav').querySelectorAll('[data-cat]').forEach(btn => {
