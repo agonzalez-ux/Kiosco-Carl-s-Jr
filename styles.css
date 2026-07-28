@@ -956,6 +956,7 @@ a { -webkit-tap-highlight-color: transparent; }
   display: block;
   filter: url(#sharpen) contrast(1.08) saturate(1.1);
 }
+.attract-photo[hidden] { display: none; }
 .attract-tap-hint {
   position: absolute; bottom: 60px; left: 0; right: 0;
   text-align: center;
