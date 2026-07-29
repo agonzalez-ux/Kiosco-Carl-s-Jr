@@ -92,29 +92,29 @@
 
     .demo-link:hover { color: var(--yellow); border-color: var(--yellow); }
 
-    /* ── TICKER STRIP ── */
+    /* ── TICKER STRIP ──
+       INC-18: el banner queda fijo. Antes se desplazaba y el contenido se
+       veía incompleto. */
     .ticker {
       background: var(--red);
       overflow: hidden;
-      white-space: nowrap;
       height: 32px;
       display: flex;
       align-items: center;
+      justify-content: center;
+      padding: 0 16px;
     }
 
     .ticker-track {
-      display: inline-block;
-      animation: ticker-move 18s linear infinite;
+      display: block;
       font-family: 'Anton', sans-serif;
       font-size: 13px;
       letter-spacing: 3px;
       color: var(--yellow);
-      padding-left: 100%;
-    }
-
-    @keyframes ticker-move {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     /* ── SPLIT BOARD ── */
@@ -170,6 +170,11 @@
       align-content: start;
       gap: 8px;
     }
+
+    /* INC-15: sin pedidos, la promo ocupa el tablero entero y las columnas
+       se ocultan en vez de quedar recortadas debajo. */
+    main.is-empty { grid-template-columns: 1fr; }
+    main.is-empty .split-col { display: none; }
 
     /* ── EMPTY STATE ── */
     .empty-state {
@@ -449,10 +454,7 @@
 <!-- TICKER -->
 <div class="ticker" aria-hidden="true">
   <span class="ticker-track">
-    🔥 CARL'S JR &nbsp;·&nbsp; BIGGER BETTER BURGERS &nbsp;·&nbsp; ¡PEDIDO FRESCO PARA TI! &nbsp;·&nbsp;
-    🍔 WESTERN BACON CHEESEBURGER &nbsp;·&nbsp; FAMOSO STAR &nbsp;·&nbsp; CRINKLE CUT FRIES &nbsp;·&nbsp;
-    🔥 CARL'S JR &nbsp;·&nbsp; BIGGER BETTER BURGERS &nbsp;·&nbsp; ¡PEDIDO FRESCO PARA TI! &nbsp;·&nbsp;
-    🍔 WESTERN BACON CHEESEBURGER &nbsp;·&nbsp; FAMOSO STAR &nbsp;·&nbsp; CRINKLE CUT FRIES &nbsp;·&nbsp;
+    🔥 CARL'S JR &nbsp;·&nbsp; BIGGER BETTER BURGERS &nbsp;·&nbsp; ¡PEDIDO FRESCO PARA TI!
   </span>
 </div>
 
@@ -504,9 +506,11 @@ window.addEventListener('storage', e => {
 });
 
 /* ── UTILITIES ── */
+// INC-14: descarta IDs alfanuméricos y pedidos bloqueados de sesiones anteriores.
 function readOrders() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    return CJSync.activeOrders(raw);
   } catch { return []; }
 }
 
@@ -596,7 +600,10 @@ function refresh() {
   if (!orders.length) {
     bPreparing.innerHTML = '';
     bReady.innerHTML     = '';
-    // Show empty state spanning both columns
+    /* INC-15: las columnas se ocultan mientras no hay pedidos. Antes se añadía
+       la promo como tercer elemento de la rejilla de 2 columnas, lo que
+       recortaba "En preparación" / "Listos para recoger" y las tapaba. */
+    main.classList.add('is-empty');
     if (!main.querySelector('.empty-state')) {
       const emp = document.createElement('div');
       emp.className = 'empty-state';
@@ -610,7 +617,8 @@ function refresh() {
     return;
   }
 
-  // Remove empty state if present
+  // Vuelven los pedidos: se restauran las columnas y se quita la promo
+  main.classList.remove('is-empty');
   const emp = main.querySelector('.empty-state');
   if (emp) emp.remove();
 
@@ -645,61 +653,13 @@ const ctx     = canvas.getContext('2d');
 let particles = [];
 let rafId     = null;
 
+/* INC-17: efecto de confeti retirado. Se conserva la función como no-op
+   para no romper las llamadas existentes. */
 function fireConfetti() {
-  if (confettiActive) return;
-  confettiActive = true;
-
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const COLORS = [
-    '#CC0000', '#FFC82C', '#22c55e', '#ffffff', '#ff6600', '#ff4444'
-  ];
-  const COUNT = 160;
-
-  particles = Array.from({ length: COUNT }, () => ({
-    x:    Math.random() * canvas.width,
-    y:    Math.random() * canvas.height * -.5 - 20,
-    vx:   (Math.random() - .5) * 5,
-    vy:   Math.random() * 4 + 2,
-    rot:  Math.random() * 360,
-    vrot: (Math.random() - .5) * 8,
-    w:    Math.random() * 10 + 6,
-    h:    Math.random() * 5  + 3,
-    col:  COLORS[Math.floor(Math.random() * COLORS.length)],
-    life: 1,
-  }));
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let alive = false;
-    particles.forEach(p => {
-      p.x    += p.vx;
-      p.y    += p.vy;
-      p.rot  += p.vrot;
-      p.vy   += .07;
-      p.life -= .004;
-      if (p.life > 0 && p.y < canvas.height + 20) {
-        alive = true;
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, p.life);
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot * Math.PI / 180);
-        ctx.fillStyle = p.col;
-        ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-        ctx.restore();
-      }
-    });
-    if (alive) {
-      rafId = requestAnimationFrame(draw);
-    } else {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      confettiActive = false;
-    }
-  }
-
-  if (rafId) cancelAnimationFrame(rafId);
-  draw();
+  confettiActive = false;
+  particles = [];
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 window.addEventListener('resize', () => {

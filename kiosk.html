@@ -47,7 +47,7 @@
       <h1 class="welcome-title" data-i18n="title">Haz tu pedido<br>a lo grande</h1>
     </div>
     <button id="btnStart" class="btn-start" type="button">
-      <span class="btn-start-inner" data-i18n="btnGuest">Continuar sin cuenta</span>
+      <span class="btn-start-inner" data-i18n="btnGuest">Continuar</span>
     </button>
   </section>
 
@@ -159,6 +159,7 @@
         <p class="success-points" id="successPointsRow"></p>
         <div id="orderSummary" class="order-summary"></div>
         <div id="ticketDigitalBox" class="ticket-digital-box"></div>
+        <!-- El ticket solo se imprime si el cliente lo pide aquí -->
         <button id="btnPrintTicket" class="btn-print-ticket" type="button">🖨️ Imprimir ticket</button>
         <div id="countdownBox" class="countdown-box">
           <div class="countdown-ring"><span id="countdownVal">12</span></div>
@@ -171,8 +172,9 @@
       <div class="checkout-payment" id="checkoutPayment">
         <h2 id="howPayTitle">¿Cómo pagas?</h2>
         <div class="payment-grid" id="paymentGrid"></div>
+        <p id="payMethodHint" class="pay-hint" hidden></p>
+        <!-- INC-05: el cobro con tarjeta se realiza en el datáfono, no se piden datos en pantalla -->
         <div id="stripe-element-wrap" hidden style="margin:16px 0 4px">
-          <div class="stripe-test-hint">🧪 <strong>Datos de prueba:</strong> 4242 4242 4242 4242 &nbsp;·&nbsp; 12/28 &nbsp;·&nbsp; 123</div>
           <div id="stripe-payment-element"></div>
         </div>
         <button id="btnPay" class="btn-checkout" type="button" id="confirmPayBtn">Confirmar pago</button>
