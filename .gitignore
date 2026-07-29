@@ -1,0 +1,15 @@
+# Perfil temporal que crea abrir-kiosco.bat al lanzar Chrome
+.chrome-kiosco/
+
+# Tickets generados en pruebas locales
+pedido-*.txt
+
+# Sistema
+Thumbs.db
+.DS_Store
+
+# Metadatos basura de macOS del zip de referencia
+__MACOSX/
+
+# El zip de referencia va extraido en V2_ref/, no hace falta duplicarlo
+Kiosco Menu PNGs.zip

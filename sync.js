@@ -146,5 +146,30 @@ const CJSync = (function () {
     ]);
   }
 
-  return { saveOrders, nextOrderNum, onOrdersChange, isEnabled, resetAll };
+  /* ── Pedidos activos (INC-10 / INC-14) ──
+     Descarta lo que nunca debería llegar a pantalla:
+       · identificadores no numéricos (pedidos de versiones antiguas)
+       · estados desconocidos o ya finalizados
+       · pedidos "listos" con más de 8 minutos
+       · pedidos bloqueados de sesiones anteriores (más de 12 h) */
+  const ACTIVE_STATUS = ['pending', 'preparing', 'rival_preparing', 'ready'];
+  const READY_MAX_MS   = 8 * 60 * 1000;
+  const SESSION_MAX_MS = 12 * 60 * 60 * 1000;
+
+  function activeOrders(orders) {
+    if (!Array.isArray(orders)) return [];
+    const now = Date.now();
+    return orders.filter(o => {
+      if (!o || typeof o !== 'object') return false;
+      const id = Number(o.id);
+      if (!Number.isInteger(id) || id <= 0) return false;
+      if (!ACTIVE_STATUS.includes(o.status)) return false;
+      const ts = Number(o.timestamp) || 0;
+      if (ts && now - ts > SESSION_MAX_MS) return false;
+      if (o.status === 'ready' && now - (Number(o.readyAt) || ts) > READY_MAX_MS) return false;
+      return true;
+    });
+  }
+
+  return { saveOrders, nextOrderNum, onOrdersChange, isEnabled, resetAll, activeOrders };
 })();

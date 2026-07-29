@@ -670,8 +670,13 @@
     /* ── TOUCH / TÓTEM ── */
     button, .q-card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
-    /* ── FORMATO TÓTEM (portrait) ── */
-    @media (orientation: portrait), (max-width: 700px) {
+    /* ── FORMATO ESTRECHO (solo móvil) ──
+       El KDS debe mantenerse SIEMPRE en horizontal de 3 columnas
+       (cola a la izquierda · pedido en el centro · progreso y botón de
+       finalizar a la derecha), también en pantallas verticales de tótem.
+       Por eso este bloque ya no se activa por orientación, solo cuando la
+       pantalla es realmente estrecha. */
+    @media (max-width: 700px) {
 
       body { height: 100svh; height: 100vh; }
 
@@ -681,7 +686,9 @@
       .kds-logo-text { font-size: .8rem; }
       .kds-clock { font-size: 1.2rem; }
       .kds-orders-count-val { font-size: 1.1rem; }
-      .kds-demo-back { display: none; }
+      /* El botón de volver a la demo debe seguir accesible en tótem:
+         antes se ocultaba en portrait y no había forma de volver atrás. */
+      .kds-demo-back { display: inline-block; font-size: .6rem; padding: 3px 7px; }
 
       /* Main: cola arriba, pedido activo abajo */
       .kds-main { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
@@ -965,8 +972,13 @@
 
 
     /* ── STORAGE ── */
+    // INC-10: solo pedidos activos (sin IDs alfanuméricos ni órdenes finalizadas
+    // o bloqueadas de sesiones anteriores).
     function getOrders() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_ORDERS) || '[]'); } catch { return []; }
+      try {
+        const raw = JSON.parse(localStorage.getItem(STORAGE_ORDERS) || '[]');
+        return CJSync.activeOrders(raw);
+      } catch { return []; }
     }
     function saveOrders(orders) {
       const cleaned = orders.filter(o => o.status !== 'ready' || (Date.now() - (o.readyAt || o.timestamp)) < 8 * 60 * 1000);
@@ -1599,56 +1611,21 @@
       if (next) startOrder(next); else render();
     }
 
-    /* ── CONFETTI ── */
+    /* ── CONFETTI ──
+       INC-13: efecto retirado. Se conservan las funciones como no-op
+       para no romper las llamadas existentes. */
     let confettiParticles = [];
     let confettiFrame = null;
 
-    function startConfetti(perf) {
-      const canvas = document.getElementById('confettiCanvas');
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const ctx = canvas.getContext('2d');
-      const colors = perf === 'late'
-        ? ['#666','#444','#888']
-        : ['#FFC82C','#CC0000','#ffffff','#22C55E','#3B82F6','#ff6b6b','#ffd700'];
-
-      confettiParticles = Array.from({ length: perf === 'late' ? 20 : 80 }, () => ({
-        x: Math.random() * canvas.width,
-        y: -10 - Math.random() * 200,
-        vx: (Math.random() - .5) * 4,
-        vy: 2 + Math.random() * 4,
-        rot: Math.random() * 360,
-        rotV: (Math.random() - .5) * 8,
-        w: 8 + Math.random() * 10,
-        h: 4 + Math.random() * 6,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        opacity: 1,
-      }));
-
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        confettiParticles.forEach(p => {
-          p.x  += p.vx; p.y += p.vy;
-          p.rot += p.rotV; p.vy += .08;
-          if (p.y > canvas.height) { p.opacity -= .05; }
-          ctx.save();
-          ctx.globalAlpha = Math.max(0, p.opacity);
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rot * Math.PI / 180);
-          ctx.fillStyle = p.color;
-          ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-          ctx.restore();
-        });
-        confettiParticles = confettiParticles.filter(p => p.opacity > 0);
-        if (confettiParticles.length) confettiFrame = requestAnimationFrame(draw);
-      }
-      confettiFrame = requestAnimationFrame(draw);
-    }
+    function startConfetti() { stopConfetti(); }
 
     function stopConfetti() {
-      cancelAnimationFrame(confettiFrame);
+      if (confettiFrame) { cancelAnimationFrame(confettiFrame); confettiFrame = null; }
+      confettiParticles = [];
       const canvas = document.getElementById('confettiCanvas');
-      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     /* ── LIVE RANKING STRIP ── */
@@ -1723,10 +1700,16 @@
     }
 
     document.getElementById('btnPodium').addEventListener('click', showPodium);
+    /* Cerrar las métricas de cierre reinicia SOLO el marcador de la jornada.
+       INC-12/16: los pedidos pendientes y el contador de números se conservan,
+       para que al cambiar de turno sigan visibles y la numeración no vuelva a 1.
+       INC-11: ya no se recarga la página, así que un fallo de red no deja el
+       sistema colgado. */
     document.getElementById('btnPodiumClose').addEventListener('click', () => {
       localStorage.removeItem(STORAGE_WORKERS);
-      localStorage.removeItem(STORAGE_ORDERS);
-      Promise.resolve(CJSync.resetAll()).finally(() => window.location.reload());
+      document.getElementById('podiumModal').hidden = true;
+      try { renderRanking(); } catch (_) {}
+      try { render(); } catch (_) {}
     });
 
     /* ── MISC ── */

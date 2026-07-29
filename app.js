@@ -4,7 +4,11 @@
    CARL'S JR — KIOSCO CLIENTE
    ═══════════════════════════════════════════════════ */
 
-const EUR = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+/* INC-06: precios locales en pesos enteros, como en la carta de referencia ($149). */
+const EUR = new Intl.NumberFormat('es-MX', {
+  style: 'currency', currency: 'MXN',
+  minimumFractionDigits: 0, maximumFractionDigits: 0,
+});
 
 /* ─── IFRAME-SAFE MODAL ─── */
 function safeModal(dialog) {
@@ -36,7 +40,7 @@ const PRODUCTS = [
   {
     id: 'big-carl', cat: 'burgers', name: 'The Big Carl',
     desc: 'Doble carne de vacuno a la parrilla, queso Cheddar, lechuga y Salsa Clásica Big Carl. Un clásico con carácter.',
-    price: 8.95, tags: ['Top ventas', 'Carne'], badge: '🔥 Más pedido',
+    price: 169, tags: ['Top ventas', 'Carne'], badge: '🔥 Más pedido',
     badgeStyle: '',
     img: 'https://carlsjr.es/wp-content/uploads/2023/04/Diseno-sin-titulo-2024-06-19T125728.106.png',
     protein: 'beef', hunger: 'high', stars: 5, mods: ['no-onion','no-tomato','no-sauce','extra-cheese','extra-bacon'], extras: ['extra-cheese','extra-bacon']
@@ -44,7 +48,7 @@ const PRODUCTS = [
   {
     id: 'western-bacon', cat: 'burgers', name: 'Western Bacon Cheeseburger',
     desc: 'Carne a la parrilla, bacon ahumado, queso Cheddar, aros de cebolla crujientes y salsa BBQ.',
-    price: 9.45, tags: ['BBQ', 'Bacon'], badge: 'Favorito',
+    price: 159, tags: ['BBQ', 'Bacon'], badge: 'Favorito',
     badgeStyle: 'yellow',
     img: 'https://carlsjr.es/wp-content/uploads/2023/04/Western-Bacon-Cheeseburger-nueva.png',
     protein: 'beef', hunger: 'high', stars: 5, mods: ['no-onion','no-tomato','no-sauce','extra-cheese','extra-bacon'], extras: ['extra-cheese','extra-bacon']
@@ -52,14 +56,14 @@ const PRODUCTS = [
   {
     id: 'famous-star', cat: 'burgers', name: 'Famous Star',
     desc: 'La burger icónica: carne a la parrilla, queso, tomate fresco, lechuga, cebolla y salsa especial.',
-    price: 7.95, tags: ['Clásica'], badge: null,
+    price: 129, tags: ['Clásica'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Famous-Star.png',
     protein: 'beef', hunger: 'medium', stars: 4, mods: ['no-onion','no-tomato','no-sauce','extra-cheese'], extras: ['extra-cheese']
   },
   {
     id: 'super-star', cat: 'burgers', name: 'Super Star',
     desc: 'Doble carne charbroiled, doble queso Cheddar, tomate, lechuga, mayonesa y salsa especial.',
-    price: 10.45, tags: ['Premium', 'Doble'], badge: 'Premium',
+    price: 189, tags: ['Premium', 'Doble'], badge: 'Premium',
     badgeStyle: 'yellow',
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Super-Star-1-1.png',
     protein: 'beef', hunger: 'high', stars: 5, mods: ['no-onion','no-tomato','no-sauce','extra-cheese','extra-bacon'], extras: ['extra-cheese','extra-bacon']
@@ -67,7 +71,7 @@ const PRODUCTS = [
   {
     id: 'guacamole-angus', cat: 'burgers', name: 'Guacamole Bacon Gran Angus',
     desc: 'Hamburguesa Angus 100%, guacamole, bacon crujiente, queso Suizo, lechuga, tomate, cebolla morada y Salsa Santa Fe.',
-    price: 11.95, tags: ['Angus', 'Premium', 'Guacamole'], badge: 'Premium',
+    price: 169, tags: ['Angus', 'Premium', 'Guacamole'], badge: 'Premium',
     badgeStyle: 'yellow',
     img: 'https://carlsjr.es/wp-content/uploads/2023/04/Diseno-sin-titulo-2024-05-30T111453.743.png',
     protein: 'beef', hunger: 'high', stars: 5, mods: ['no-onion','no-tomato','no-sauce','extra-cheese','extra-bacon'], extras: ['extra-cheese','extra-bacon']
@@ -75,14 +79,14 @@ const PRODUCTS = [
   {
     id: 'bacon-cheese-angus', cat: 'burgers', name: 'Bacon Cheese Gran Angus',
     desc: 'Carne Angus 100%, doble bacon, queso Cheddar, cebolla caramelizada y nuestra salsa especial.',
-    price: 11.45, tags: ['Angus', 'Bacon'], badge: null,
+    price: 175, tags: ['Angus', 'Bacon'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2025/06/Single-BaconCheese-Gran-Angus_500x500px.png',
     protein: 'beef', hunger: 'high', stars: 4, mods: ['no-onion','no-sauce','extra-cheese','extra-bacon'], extras: ['extra-cheese','extra-bacon']
   },
   {
     id: 'texas-angus', cat: 'burgers', name: 'Texas Bacon Gran Angus',
     desc: 'Angus, bacon ahumado doble, queso Cheddar extra, jalapeños, salsa BBQ y cebolla crujiente.',
-    price: 12.45, tags: ['Angus', 'Picante', 'Texas'], badge: '🌶 Hot',
+    price: 185, tags: ['Angus', 'Picante', 'Texas'], badge: '🌶 Hot',
     badgeStyle: '',
     img: 'https://carlsjr.es/wp-content/uploads/2025/01/Single-Texas-Bacon-Gran-Angus_500x500px.png',
     protein: 'beef', hunger: 'high', stars: 4, mods: ['no-onion','no-sauce','extra-cheese','extra-bacon'], extras: ['extra-cheese','extra-bacon']
@@ -90,7 +94,7 @@ const PRODUCTS = [
   {
     id: 'bacon-trufa', cat: 'burgers', name: 'Bacon Trufa',
     desc: 'Carne charbroiled, queso Cheddar, bacon crujiente y la irresistible salsa de trufa negra.',
-    price: 10.95, tags: ['Trufa', 'Gourmet'], badge: 'Nuevo',
+    price: 199, tags: ['Trufa', 'Gourmet'], badge: 'Nuevo',
     badgeStyle: 'green',
     img: 'https://carlsjr.es/wp-content/uploads/2025/12/Bacon_trufa_single.png',
     protein: 'beef', hunger: 'high', stars: 5, mods: ['no-onion','no-sauce','extra-cheese','extra-bacon'], extras: ['extra-cheese','extra-bacon']
@@ -98,35 +102,35 @@ const PRODUCTS = [
   {
     id: 'original-angus', cat: 'burgers', name: 'Original Gran Angus',
     desc: 'La hamburguesa Angus 100% en su expresión más pura: carne, queso, lechuga, tomate y mayonesa.',
-    price: 10.95, tags: ['Angus', 'Clásica'], badge: null,
+    price: 149, tags: ['Angus', 'Clásica'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/04/Original_Gran_Angu.png',
     protein: 'beef', hunger: 'high', stars: 4, mods: ['no-onion','no-tomato','no-sauce','extra-cheese'], extras: ['extra-cheese']
   },
   {
     id: 'famous-crispy-chicken', cat: 'burgers', name: 'Famous Crispy Chicken',
     desc: 'Pechuga de pollo crujiente con queso Cheddar, mayonesa, salsa especial, lechuga, tomate, cebolla y pepinillos.',
-    price: 8.75, tags: ['Pollo', 'Crujiente'], badge: null,
+    price: 135, tags: ['Pollo', 'Crujiente'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2025/04/Single-Famous-Crispy-Chicken_500x500px.png',
     protein: 'chicken', hunger: 'medium', stars: 4, mods: ['no-onion','no-tomato','no-sauce','extra-cheese'], extras: ['extra-cheese']
   },
   {
     id: 'famous-grilled-chicken', cat: 'burgers', name: 'Famous Grilled Chicken',
     desc: 'Pechuga de pollo a la plancha, queso Cheddar, mayonesa, salsa especial, lechuga, tomate, cebolla y pepinillos.',
-    price: 8.25, tags: ['Pollo', 'Plancha', 'Ligera'], badge: null,
+    price: 129, tags: ['Pollo', 'Plancha', 'Ligera'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2025/04/Single-Famous-Grilled-Chicken_500x500px.png',
     protein: 'chicken', hunger: 'medium', stars: 4, mods: ['no-onion','no-tomato','no-sauce','extra-cheese'], extras: ['extra-cheese']
   },
   {
     id: 'chicken-crispy-sandwich', cat: 'burgers', name: 'Chicken Crispy Sandwich',
     desc: 'Filete de pollo crujiente, lechuga, mayonesa y pepinillos. Sencillo y adictivo.',
-    price: 7.95, tags: ['Pollo', 'Sándwich'], badge: null,
+    price: 119, tags: ['Pollo', 'Sándwich'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2025/04/Single-Chicken-Crispy-Sandwich_500x500px.png',
     protein: 'chicken', hunger: 'medium', stars: 3, mods: ['no-onion','no-sauce','extra-cheese'], extras: ['extra-cheese']
   },
   {
     id: 'moving-mountains', cat: 'burgers', name: 'Moving Mountains Famous Star',
     desc: 'Proteína 100% vegetal Moving Mountains, queso Cheddar, tomate, pepinillos, cebolla, mayonesa y salsa especial.',
-    price: 9.25, tags: ['Vegetal', '100% Plant'], badge: '🌱 Plant',
+    price: 155, tags: ['Vegetal', '100% Plant'], badge: '🌱 Plant',
     badgeStyle: 'green',
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Moving-Mountains-Famous-Star-1.png',
     protein: 'plant', hunger: 'medium', stars: 4, mods: ['no-onion','no-tomato','no-sauce','extra-cheese'], extras: ['extra-cheese']
@@ -135,7 +139,7 @@ const PRODUCTS = [
   {
     id: 'combo-super-star', cat: 'combos', name: 'Menú Super Star',
     desc: 'Super Star + Patatas Medianas + Bebida Refill. El combo más popular del kiosco.',
-    price: 12.95, tags: ['Combo', 'Completo'], badge: '⭐ Top Combo',
+    price: 259, tags: ['Combo', 'Completo'], badge: '⭐ Top Combo',
     badgeStyle: 'yellow',
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Super-Star-1-1.png',
     protein: 'beef', hunger: 'high', stars: 5, combo: true, mods: [], extras: []
@@ -143,7 +147,7 @@ const PRODUCTS = [
   {
     id: 'combo-big-carl', cat: 'combos', name: 'Menú The Big Carl',
     desc: 'The Big Carl + Crisscuts Medianos + Bebida Refill. El dúo perfecto.',
-    price: 12.95, tags: ['Combo', 'Big Carl'], badge: '🔥 Más pedido',
+    price: 239, tags: ['Combo', 'Big Carl'], badge: '🔥 Más pedido',
     badgeStyle: '',
     img: 'https://carlsjr.es/wp-content/uploads/2023/04/Diseno-sin-titulo-2024-06-19T125728.106.png',
     protein: 'beef', hunger: 'high', stars: 5, combo: true, mods: [], extras: []
@@ -151,14 +155,14 @@ const PRODUCTS = [
   {
     id: 'combo-western', cat: 'combos', name: 'Menú Western Bacon',
     desc: 'Western Bacon + Patatas Medianas + Bebida Refill. La leyenda de la barbacoa.',
-    price: 13.45, tags: ['Combo', 'BBQ'], badge: null,
+    price: 229, tags: ['Combo', 'BBQ'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/04/Western-Bacon-Cheeseburger-nueva.png',
     protein: 'beef', hunger: 'high', stars: 4, combo: true, mods: [], extras: []
   },
   {
     id: 'combo-chicken-crispy', cat: 'combos', name: 'Menú Chicken Crispy Sandwich',
     desc: 'Chicken Crispy Sandwich + Patatas Medianas + Bebida Refill.',
-    price: 11.95, tags: ['Combo', 'Pollo'], badge: null,
+    price: 189, tags: ['Combo', 'Pollo'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2025/04/Single-Chicken-Crispy-Sandwich_500x500px.png',
     protein: 'chicken', hunger: 'high', stars: 4, combo: true, mods: [], extras: []
   },
@@ -166,7 +170,7 @@ const PRODUCTS = [
   {
     id: 'crisscuts', cat: 'sides', name: 'Crisscuts',
     desc: 'Las patatas más icónicas de Carl\'s Jr. Crujientes por fuera, esponjosas por dentro.',
-    price: 3.75, tags: ['Clásico'], badge: '🔥 Imprescindible',
+    price: 65, tags: ['Clásico'], badge: '🔥 Imprescindible',
     badgeStyle: '',
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/crisscuts-2.png',
     protein: 'side', hunger: 'low', stars: 5, mods: [], extras: []
@@ -174,14 +178,14 @@ const PRODUCTS = [
   {
     id: 'fries', cat: 'sides', name: 'Patatas Fritas',
     desc: 'Patatas fritas doradas al punto perfecto.',
-    price: 2.95, tags: ['Clásico'], badge: null,
+    price: 55, tags: ['Clásico'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Patatas-Fritas.png',
     protein: 'side', hunger: 'low', stars: 4, mods: [], extras: []
   },
   {
     id: 'nuggets', cat: 'sides', name: 'Chicken Nuggets',
     desc: 'Nuggets de pollo 100% pechuga, crujientes y jugosos.',
-    price: 3.95, tags: ['Pollo'], badge: null,
+    price: 75, tags: ['Pollo'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Chicken-Nuggets.png',
     protein: 'chicken', hunger: 'low', stars: 4, mods: [], extras: []
   },
@@ -189,14 +193,14 @@ const PRODUCTS = [
   {
     id: 'twist-oreo', cat: 'desserts', name: 'Twist Oreo',
     desc: 'Helado suave con sirope y topping crujiente de Oreo.',
-    price: 3.95, tags: ['Oreo', 'Postre'], badge: null,
+    price: 65, tags: ['Oreo', 'Postre'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2026/02/twist-oreo-1024x1024.png',
     protein: 'dessert', hunger: 'low', stars: 5, mods: [], extras: []
   },
   {
     id: 'shake-oreo', cat: 'desserts', name: 'American Shake Oreo',
     desc: 'Batido cremoso American-style con galleta Oreo. Espeso y adictivo.',
-    price: 4.95, tags: ['Shake', 'Oreo'], badge: 'Favorito',
+    price: 85, tags: ['Shake', 'Oreo'], badge: 'Favorito',
     badgeStyle: 'yellow',
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/American_Shake_Oreo_500x500.png',
     protein: 'dessert', hunger: 'low', stars: 5, mods: [], extras: []
@@ -204,14 +208,14 @@ const PRODUCTS = [
   {
     id: 'shake-chocolate', cat: 'desserts', name: 'American Shake Chocolate',
     desc: 'Batido de chocolate intenso con helado cremoso y nata.',
-    price: 4.95, tags: ['Shake', 'Chocolate'], badge: null,
+    price: 85, tags: ['Shake', 'Chocolate'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/American_Shake_Chocolate-500x500px.png',
     protein: 'dessert', hunger: 'low', stars: 4, mods: [], extras: []
   },
   {
     id: 'shake-fresa', cat: 'desserts', name: 'American Shake Fresa',
     desc: 'Batido de fresa natural con un toque cremoso irresistible.',
-    price: 4.95, tags: ['Shake', 'Fresa'], badge: null,
+    price: 85, tags: ['Shake', 'Fresa'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/American_Shake_fresa-500x500px.png',
     protein: 'dessert', hunger: 'low', stars: 4, mods: [], extras: []
   },
@@ -219,14 +223,14 @@ const PRODUCTS = [
   {
     id: 'refrescos', cat: 'drinks', name: 'Refresco Refill',
     desc: 'Elige tu favorito: Coca-Cola, Fanta Naranja, Sprite, Aquarius, Fuze Tea o Monster. Vaso refill.',
-    price: 2.95, tags: ['Refill'], badge: null,
+    price: 49, tags: ['Refill'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Refresco_Vaso_Cocacola-sabor-original.png',
     protein: 'drink', hunger: 'low', stars: 4, mods: [], extras: []
   },
   {
     id: 'cafe-te', cat: 'drinks', name: 'Café y Té',
     desc: 'Café solo, cortado, con leche, té negro o manzanilla.',
-    price: 2.45, tags: ['Caliente'], badge: null,
+    price: 39, tags: ['Caliente'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Cafe-y-Te-carls-jr-bebidas-2.png',
     protein: 'drink', hunger: 'low', stars: 3, mods: [], extras: []
   },
@@ -234,14 +238,14 @@ const PRODUCTS = [
   {
     id: 'crispy-salad', cat: 'salads', name: 'Chicken Crispy Salad',
     desc: 'Pollo crujiente, lechuga variada, cebolla morada, tomate cherry y croutons.',
-    price: 8.95, tags: ['Ensalada', 'Pollo'], badge: null,
+    price: 145, tags: ['Ensalada', 'Pollo'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Ensalada_crispy_plato_blanco_500x500px.png',
     protein: 'chicken', hunger: 'medium', stars: 4, mods: [], extras: []
   },
   {
     id: 'grilled-salad', cat: 'salads', name: 'Chicken Grilled Salad',
     desc: 'Pollo a la parrilla marinado, lechuga variada, tomate cherry y croutons.',
-    price: 8.95, tags: ['Ensalada', 'Plancha', 'Light'], badge: null,
+    price: 145, tags: ['Ensalada', 'Plancha', 'Light'], badge: null,
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Chicken_Grilled_Salad_plato_blanco-500x500px.png',
     protein: 'chicken', hunger: 'medium', stars: 4, mods: [], extras: []
   },
@@ -249,7 +253,7 @@ const PRODUCTS = [
   {
     id: 'kids-burger', cat: 'kids', name: 'Menú Little Stars Burger',
     desc: 'Hamburguesa + Patatas Pequeñas + Bebida + Bebedino. ¡La sorpresa del Bebedino incluida!',
-    price: 6.95, tags: ['Infantil', 'Completo'], badge: '⭐ Little Stars',
+    price: 109, tags: ['Infantil', 'Completo'], badge: '⭐ Little Stars',
     badgeStyle: 'yellow',
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Bodegon_Menu_infantil_Bebidino_Hamburger_500x500px.png',
     protein: 'beef', hunger: 'medium', stars: 5, combo: true, mods: ['no-onion','no-sauce'], extras: []
@@ -257,7 +261,7 @@ const PRODUCTS = [
   {
     id: 'kids-nuggets', cat: 'kids', name: 'Menú Little Stars Nuggets',
     desc: '4 Nuggets de pollo + Patatas Pequeñas + Bebida + Bebedino.',
-    price: 6.75, tags: ['Infantil', 'Pollo'], badge: '⭐ Little Stars',
+    price: 105, tags: ['Infantil', 'Pollo'], badge: '⭐ Little Stars',
     badgeStyle: 'yellow',
     img: 'https://carlsjr.es/wp-content/uploads/2023/03/Bodegon_Menu_infantil_Bebidino_Nuggets_500x500px.png',
     protein: 'chicken', hunger: 'medium', stars: 5, combo: true, mods: [], extras: []
@@ -266,7 +270,7 @@ const PRODUCTS = [
   {
     id: 'mystery-carls', cat: 'combos', name: "Mystery Carl's",
     desc: 'Menú sorpresa preparado especialmente para ti. El chef elige lo que más te conviene hoy. ¡Descúbrelo cuando llegue a la bandeja!',
-    price: 13.95, tags: ['Sorpresa', 'Misterio'], badge: '🎲 Sorpresa',
+    price: 269, tags: ['Sorpresa', 'Misterio'], badge: '🎲 Sorpresa',
     badgeStyle: 'mystery',
     img: '',
     protein: 'mystery', hunger: 'any', stars: 5, isMystery: true, combo: true, mods: [], extras: []
@@ -322,14 +326,16 @@ const MODIFIERS = [
   { id: 'no-onion',     label: 'Sin cebolla',    price: 0 },
   { id: 'no-tomato',    label: 'Sin tomate',     price: 0 },
   { id: 'no-sauce',     label: 'Sin salsa',      price: 0 },
-  { id: 'extra-cheese', label: 'Extra queso',    price: 0.80 },
-  { id: 'extra-bacon',  label: 'Extra bacon',    price: 1.20 }
+  { id: 'extra-cheese', label: 'Extra queso',    price: 18 },
+  { id: 'extra-bacon',  label: 'Extra bacon',    price: 25 }
 ];
 
+/* INC-05: se añade el pago en efectivo. La tarjeta se cobra por datáfono,
+   por eso no se piden los datos de la tarjeta en pantalla. */
 const PAYMENT_METHODS = [
-  { id: 'card',    label: 'Tarjeta',     img: './pay-card.png' },
-  { id: 'apple',   label: 'Apple Pay',   img: './pay-apple.png' },
-  { id: 'google',  label: 'Google Pay',  img: './pay-google.png' },
+  { id: 'card',    label: 'Pago con Tarjeta', img: './pay-card.png' },
+  { id: 'apple',   label: 'Apple Pay',        img: './pay-apple.png' },
+  { id: 'google',  label: 'Google Pay',       img: './pay-google.png' },
 ];
 
 // ── STRIPE CONFIG ──────────────────────────────────────────────
@@ -352,9 +358,9 @@ const QUIZ = [
     id: 'protein',
     q: '¿Qué te apetece hoy?',
     opts: [
-      { id: 'beef',    icon: '🥩', label: 'Carne a la parrilla' },
-      { id: 'chicken', icon: '🍗', label: 'Pollo crujiente' },
-      { id: 'plant',   icon: '🌱', label: 'Vegetal' }
+      { id: 'beef',    icon: '🥩', img: './iconos/ic-carne.png',   label: 'Carne a la parrilla' },
+      { id: 'chicken', icon: '🍗', img: './iconos/ic-pollo.png',   label: 'Pollo crujiente' },
+      { id: 'plant',   icon: '🌱', img: './iconos/ic-lechuga.png', label: 'Vegetal' }
     ]
   },
   {
@@ -388,9 +394,9 @@ const QUIZ = [
     id: 'sweet',
     q: '¿Rematas con algo dulce?',
     opts: [
-      { id: 'shake',  icon: '🥛', label: 'Batido helado' },
-      { id: 'ice',    icon: '🍦', label: 'Twist Oreo' },
-      { id: 'none',   icon: '🙅', label: 'Sin postre, gracias' }
+      { id: 'shake',  icon: '🥛', img: './iconos/ic-batido.png', label: 'Batido helado' },
+      { id: 'ice',    icon: '🍦', img: './iconos/ic-helado.png', label: 'Twist Oreo' },
+      { id: 'none',   icon: '🙅', img: './iconos/ic-no.png',     label: 'Sin postre, gracias' }
     ]
   }
 ];
@@ -409,7 +415,7 @@ const LANGS = {
     eyebrow: 'Bigger. Better. Burgers.',
     title: 'Haz tu pedido<br>a lo grande',
     btnLogin: 'Iniciar sesión y sumar puntos ⭐',
-    btnGuest: 'Continuar sin cuenta',
+    btnGuest: 'Continuar',
     lsTitle: 'Entra con tu cuenta',
     lsSub: 'Escanea el QR con tu móvil o rellena el formulario aquí',
     lsQrHint: '📱 Apunta la cámara',
@@ -434,8 +440,11 @@ const LANGS = {
     ticketQuestion: '¿Quieres recibir el ticket en tu email?',
     registerTicket: '⭐ Regístrate y recibe tu ticket',
     newOrder: 'Nuevo pedido',
-    payCard: 'Tarjeta', payContactless: 'Contactless', payApple: 'Apple Pay',
+    payCard: 'Pago con Tarjeta', payContactless: 'Contactless', payApple: 'Apple Pay',
     payGoogle: 'Google Pay', payCash: 'Efectivo', payQR: 'QR / Bizum',
+    hintCard: 'Pasa o inserta tu tarjeta en el datáfono al confirmar.',
+    hintCash: 'Paga en efectivo en el mostrador al recoger tu pedido.',
+    hintWallet: 'Acerca tu móvil al datáfono al confirmar.',
     q1: '¿Qué te apetece hoy?', q1o1: 'Carne a la parrilla', q1o2: 'Pollo crujiente', q1o3: 'Vegetal',
     q2: '¿Cuánta hambre tienes?', q2o1: 'Algo ligero', q2o2: 'Tengo hambre', q2o3: '¡Muuucha hambre!',
     q3: '¿Cuál es tu rollo hoy?', q3o1: 'El clásico de siempre', q3o2: 'Bacon & BBQ', q3o3: 'Premium Angus',
@@ -488,7 +497,7 @@ const LANGS = {
     eyebrow: 'Bigger. Better. Burgers.',
     title: 'Make Your Order<br>Big',
     btnLogin: 'Sign in & earn points ⭐',
-    btnGuest: 'Continue without account',
+    btnGuest: 'Continue',
     lsTitle: 'Sign in to your account',
     lsSub: 'Scan the QR with your phone or fill in the form here',
     lsQrHint: '📱 Point your camera',
@@ -513,8 +522,11 @@ const LANGS = {
     ticketQuestion: 'Want to receive your ticket by email?',
     registerTicket: '⭐ Sign up & receive your ticket',
     newOrder: 'New order',
-    payCard: 'Card', payContactless: 'Contactless', payApple: 'Apple Pay',
+    payCard: 'Card payment', payContactless: 'Contactless', payApple: 'Apple Pay',
     payGoogle: 'Google Pay', payCash: 'Cash', payQR: 'QR / Bizum',
+    hintCard: 'Tap or insert your card on the terminal when you confirm.',
+    hintCash: 'Pay with cash at the counter when you pick up your order.',
+    hintWallet: 'Hold your phone near the terminal when you confirm.',
     q1: 'What are you in the mood for?', q1o1: 'Grilled beef', q1o2: 'Crispy chicken', q1o3: 'Plant-based',
     q2: 'How hungry are you?', q2o1: 'Something light', q2o2: "I'm hungry", q2o3: 'Starving!',
     q3: "What's your vibe today?", q3o1: 'Classic all the way', q3o2: 'Bacon & BBQ', q3o3: 'Premium Angus',
@@ -617,7 +629,11 @@ function init() {
 
 /* ─── WELCOME ─── */
 function bindWelcome() {
-  $('btnStart').addEventListener('click', () => startApp(true));
+  $('btnStart').addEventListener('click', () => {
+    // gesto del usuario: momento válido para revalidar el permiso de la carpeta
+    ensureTicketPermission();
+    startApp(true);
+  });
   initSlider();
   applyI18n();
 }
@@ -748,7 +764,9 @@ function renderProducts() {
 }
 
 function productCard(p) {
-  const stars = '⭐'.repeat(p.stars) + (p.stars < 5 ? '<span style="opacity:.3">' + '⭐'.repeat(5 - p.stars) + '</span>' : '');
+  const starImg = '<img src="./estrella.png" alt="" class="pc-star" aria-hidden="true">';
+  const stars = starImg.repeat(p.stars)
+    + (p.stars < 5 ? `<span class="pc-star-off">${starImg.repeat(5 - p.stars)}</span>` : '');
   const badgeHtml = p.badge ? `<div class="pc-badge ${p.badgeStyle || ''}">${p.badge}</div>` : '';
   const imgHtml = p.isMystery
     ? `<img referrerpolicy="no-referrer" src="https://carlsjr.es/wp-content/uploads/2023/03/Western-Bacon-Cheeseburger.png" alt="Sorpresa" class="mystery-card-img"><div class="mystery-card-q">?</div>`
@@ -1206,7 +1224,9 @@ function renderQuizStep() {
     <div class="quiz-options">
       ${step.opts.map(o => `
         <button class="quiz-option" data-answer="${o.id}" type="button">
-          <span class="quiz-option-icon">${o.icon}</span>
+          ${o.img
+            ? `<img class="quiz-option-img" src="${o.img}" alt="" onerror="this.outerHTML='<span class=quiz-option-icon>${o.icon}</span>'">`
+            : `<span class="quiz-option-icon">${o.icon}</span>`}
           <span class="quiz-option-label">${o.label}</span>
         </button>
       `).join('')}
@@ -1402,11 +1422,17 @@ function renderPaymentGrid() {
   if ($('howPayTitle')) $('howPayTitle').textContent = t('howPay');
   if ($('confirmPayBtn')) $('confirmPayBtn').textContent = t('confirmPay');
   if ($('backOrderBtn')) $('backOrderBtn').textContent = t('backOrder');
-  $('paymentGrid').innerHTML = PAYMENT_METHODS.map(m => `
+  $('paymentGrid').innerHTML = PAYMENT_METHODS.map(m => {
+    const label = t(PAY_LABEL_KEYS[m.id]) || m.label;
+    const visual = m.img
+      ? `<img class="pay-icon" src="${m.img}" alt="">`
+      : `<span class="pay-emoji" aria-hidden="true">${m.icon || ''}</span>`;
+    return `
     <button class="pay-method ${state.payment === m.id ? 'selected' : ''}" data-pay="${m.id}" type="button">
-      <img class="pay-icon" src="${m.img}" alt="${t(PAY_LABEL_KEYS[m.id]) || m.label}">
-    </button>
-  `).join('');
+      ${visual}
+      <span class="pay-label">${label}</span>
+    </button>`;
+  }).join('');
   $('paymentGrid').querySelectorAll('[data-pay]').forEach(btn => {
     btn.addEventListener('click', () => {
       state.payment = btn.dataset.pay;
@@ -1414,15 +1440,21 @@ function renderPaymentGrid() {
     });
   });
 
-  // Stripe Payment Element: solo si tarjeta + Stripe configurado
+  // INC-05: el cobro con tarjeta se hace en el datáfono, así que no se
+  // solicitan los datos de la tarjeta en pantalla.
   const stripeWrap = $('stripe-element-wrap');
-  if (state.payment === 'card' && STRIPE_PUBLIC_KEY && WORKER_URL) {
-    stripeWrap.hidden = false;
-    _mountStripeElement();
-  } else {
-    stripeWrap.hidden = true;
-    // Desmonta para no acumular instancias
-    if (stripePayEl) { stripePayEl.unmount(); stripePayEl = null; stripeElements = null; }
+  if (stripeWrap) stripeWrap.hidden = true;
+  if (stripePayEl) { stripePayEl.unmount(); stripePayEl = null; stripeElements = null; }
+
+  const hint = $('payMethodHint');
+  if (hint) {
+    const hints = {
+      card: t('hintCard'), cash: t('hintCash'),
+      apple: t('hintWallet'), google: t('hintWallet'),
+    };
+    const msg = hints[state.payment] || '';
+    hint.textContent = msg;
+    hint.hidden = !msg;
   }
 }
 
@@ -1605,10 +1637,21 @@ function _showSuccessScreen(orderNum, pts, cartSnapshot, total) {
     '¡Gracias por tu visita!',
   ].filter(Boolean).join('\n');
 
+  // Siempre se guarda el .txt en la carpeta de tickets configurada
   saveTicketToFile(orderNum, receiptText);
 
-  // Solo se imprime si el cliente pulsa el botón — nunca automáticamente.
-  $('btnPrintTicket').onclick = () => printReceipt(receiptHtml);
+  /* El ticket NO se imprime solo: únicamente si el cliente pulsa el botón.
+     Al pulsarlo se envía directo a la impresora, sin preguntar (para que no
+     aparezca la vista previa, Chrome debe lanzarse con --kiosk-printing). */
+  const btnPrint = $('btnPrintTicket');
+  if (btnPrint) {
+    btnPrint.disabled = false;
+    btnPrint.onclick = () => {
+      printReceipt(receiptHtml);
+      btnPrint.disabled = true;
+      btnPrint.textContent = '🖨️ Imprimiendo…';
+    };
+  }
 
   $('checkoutPayment').hidden = true;
   $('checkoutSuccess').hidden = false;
@@ -1684,8 +1727,15 @@ async function _getStoredTicketDir() {
 async function _storeTicketDir(handle) {
   try {
     const db = await _openTicketsDB();
-    const tx = db.transaction('handles', 'readwrite');
-    tx.objectStore('handles').put(handle, 'ticketsDir');
+    // Hay que esperar a que la transacción termine: si la página se recarga
+    // antes (la pantalla de éxito recarga a los 12 s) la carpeta no se guardaba.
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('handles', 'readwrite');
+      tx.objectStore('handles').put(handle, 'ticketsDir');
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
   } catch (e) { console.warn('[Tickets] No se pudo guardar la carpeta:', e); }
 }
 
@@ -1703,6 +1753,23 @@ async function _getGrantedTicketDir() {
   return null;
 }
 
+/* INC-07: tras reiniciar el navegador el permiso de la carpeta vuelve a
+   'prompt' y los tickets dejaban de guardarse en silencio. Se re-pide el
+   permiso al arrancar la sesión (con gesto del usuario), no en mitad del
+   cobro, para no interrumpir al cliente. */
+async function ensureTicketPermission() {
+  if (_ticketDirHandle) return true;
+  const stored = await _getStoredTicketDir();
+  if (!stored) return false;
+  try {
+    let perm = await stored.queryPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') perm = await stored.requestPermission({ mode: 'readwrite' });
+    if (perm === 'granted') { _ticketDirHandle = stored; return true; }
+    console.warn('[Tickets] Permiso de carpeta denegado; los tickets no se guardarán en disco.');
+  } catch (e) { console.warn('[Tickets] No se pudo revalidar la carpeta:', e); }
+  return false;
+}
+
 // Acción explícita de configuración (botón "Configurar carpeta de tickets").
 // Debe llamarse directamente desde un clic real del usuario — es la única
 // función de este módulo que puede abrir el selector de carpetas del sistema.
@@ -1712,25 +1779,65 @@ async function setupTicketFolder() {
     return;
   }
   try {
-    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    const parent = await window.showDirectoryPicker({ mode: 'readwrite' });
+
+    // Asegura permiso de escritura sobre la ubicación elegida
+    let perm = await parent.queryPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') perm = await parent.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') {
+      showToast('⚠️ Sin permiso de escritura en esa carpeta');
+      return;
+    }
+
+    // Dentro de la ubicación elegida se crea (o reutiliza) una carpeta "Tickets"
+    // donde se irán guardando todos los .txt.
+    const handle = await parent.getDirectoryHandle('Tickets', { create: true });
     _ticketDirHandle = handle;
     await _storeTicketDir(handle);
-    showToast('✅ Carpeta de tickets configurada');
+
+    // Prueba de escritura real: si algo falla, el usuario se entera ahora y no
+    // cuando ya se han perdido los tickets de varios pedidos.
+    try {
+      const probe = await handle.getFileHandle('_prueba.txt', { create: true });
+      const w = await probe.createWritable();
+      await w.write('Carpeta de tickets configurada correctamente.\n');
+      await w.close();
+      await handle.removeEntry('_prueba.txt').catch(() => {});
+      showToast('✅ Carpeta "Tickets" creada y lista');
+    } catch (e) {
+      console.warn('[Tickets] No se pudo escribir en la carpeta:', e);
+      showToast('⚠️ La carpeta se creó pero no se puede escribir en ella');
+    }
   } catch (e) {
-    console.warn('[Tickets] Selección de carpeta cancelada:', e);
+    if (e && e.name === 'AbortError') {
+      console.log('[Tickets] Selección de carpeta cancelada por el usuario.');
+      return;
+    }
+    console.warn('[Tickets] Error configurando la carpeta:', e);
+    showToast('⚠️ No se pudo configurar la carpeta de tickets');
   }
 }
 
 async function saveTicketToFile(orderNum, text) {
+  const dir = await _getGrantedTicketDir();
+  if (!dir) {
+    // Sin carpeta configurada el pedido sigue su curso, pero se avisa para que
+    // no parezca que los tickets se guardan cuando en realidad no lo hacen.
+    console.warn('[Tickets] No hay carpeta configurada: el ticket no se ha guardado en disco.');
+    showToast('⚠️ Configura la carpeta con el botón 🗂 Tickets');
+    return false;
+  }
   try {
-    const dir = await _getGrantedTicketDir();
-    if (!dir) return; // no configurado: el pedido sigue su curso con normalidad
     const fileHandle = await dir.getFileHandle(`pedido-${orderNum}.txt`, { create: true });
     const writable = await fileHandle.createWritable();
     await writable.write(text);
     await writable.close();
+    console.log(`[Tickets] Guardado pedido-${orderNum}.txt`);
+    return true;
   } catch (e) {
     console.warn('[Tickets] Error al guardar el ticket:', e);
+    showToast('⚠️ No se pudo guardar el ticket en disco');
+    return false;
   }
 }
 
@@ -1787,47 +1894,14 @@ function printReceipt(bodyHtml) {
   };
 }
 
+/* INC-09: efecto de confeti retirado. Se conserva la función como no-op
+   para no romper las llamadas existentes. */
 function launchConfetti() {
+  if (_confettiFrame) { cancelAnimationFrame(_confettiFrame); _confettiFrame = null; }
   const canvas = $('confetti');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  if (_confettiFrame) cancelAnimationFrame(_confettiFrame);
-
-  const pieces = Array.from({ length: 24 }, () => ({
-    x: Math.random() * canvas.width,
-    y: -10,
-    w: Math.random() * 10 + 4,
-    h: Math.random() * 6 + 4,
-    color: ['#CC0000','#FFC82C','#FFFFFF','#FF4444','#FFE066'][Math.floor(Math.random() * 5)],
-    vx: (Math.random() - .5) * 4,
-    vy: Math.random() * 4 + 2,
-    rot: Math.random() * 360,
-    drot: (Math.random() - .5) * 8
-  }));
-
-  let tick = 0;
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    pieces.forEach(p => {
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot * Math.PI / 180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx.restore();
-      p.x += p.vx; p.y += p.vy; p.rot += p.drot; p.vy += .08;
-    });
-    tick++;
-    if (tick < 60) {
-      _confettiFrame = requestAnimationFrame(draw);
-    } else {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      _confettiFrame = null;
-    }
-  }
-  draw();
+  if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 /* ─── COMBO CONFIGURADOR ─── */
@@ -1852,24 +1926,24 @@ function makeCupSvg({ liq, brand, straw, name }) {
   return 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
 
-const _CUP_URL = 'https://carlsjr.es/wp-content/uploads/2023/03/Refresco_Vaso_Cocacola-sabor-original.png';
+/* Iconos propios recortados de las láminas gráficas de la marca */
 const CUP_IMGS = {
-  'coca-cola': _CUP_URL,
-  'fanta':     _CUP_URL,
-  'sprite':    _CUP_URL,
-  'aquarius':  _CUP_URL,
-  'monster':   _CUP_URL,
-  'agua':      _CUP_URL,
+  'coca-cola': './iconos/ic-cocacola.png',
+  'fanta':     './iconos/ic-fanta.png',
+  'sprite':    './iconos/ic-sprite.png',
+  'aquarius':  './iconos/ic-aquarius.png',
+  'monster':   './iconos/ic-monster.png',
+  'agua':      './iconos/ic-agua.png',
 };
 
 const DRINKS_OPTIONS = [
-  { id: 'none',       label: 'Sin bebida',       labelEn: 'No drink',        icon: '🙅', img: null,                 extra: 0,    retail: 0    },
-  { id: 'coca-cola',  label: 'Coca-Cola',         labelEn: 'Coca-Cola',       icon: '🥤', img: CUP_IMGS['coca-cola'], extra: 0,    retail: 2.50 },
-  { id: 'fanta',      label: 'Fanta Naranja',     labelEn: 'Fanta Orange',    icon: '🟠', img: CUP_IMGS['fanta'],     extra: 0,    retail: 2.50 },
-  { id: 'sprite',     label: 'Sprite',            labelEn: 'Sprite',          icon: '💚', img: CUP_IMGS['sprite'],    extra: 0,    retail: 2.50 },
-  { id: 'aquarius',   label: 'Aquarius',          labelEn: 'Aquarius',        icon: '💙', img: CUP_IMGS['aquarius'],  extra: 0,    retail: 2.50 },
-  { id: 'monster',    label: 'Monster',           labelEn: 'Monster',         icon: '⚡', img: CUP_IMGS['monster'],   extra: 0.50, retail: 3.00 },
-  { id: 'agua',       label: 'Agua',              labelEn: 'Water',           icon: '💧', img: CUP_IMGS['agua'],      extra: 0,    retail: 1.50 },
+  { id: 'none',       label: 'Sin bebida',       labelEn: 'No drink',        icon: '🙅', img: './iconos/ic-no.png', extra: 0,    retail: 0    },
+  { id: 'coca-cola',  label: 'Coca-Cola',         labelEn: 'Coca-Cola',       icon: '🥤', img: CUP_IMGS['coca-cola'], extra: 0,    retail: 49 },
+  { id: 'fanta',      label: 'Fanta Naranja',     labelEn: 'Fanta Orange',    icon: '🟠', img: CUP_IMGS['fanta'],     extra: 0,    retail: 49 },
+  { id: 'sprite',     label: 'Sprite',            labelEn: 'Sprite',          icon: '💚', img: CUP_IMGS['sprite'],    extra: 0,    retail: 49 },
+  { id: 'aquarius',   label: 'Aquarius',          labelEn: 'Aquarius',        icon: '💙', img: CUP_IMGS['aquarius'],  extra: 0,    retail: 49 },
+  { id: 'monster',    label: 'Monster',           labelEn: 'Monster',         icon: '⚡', img: CUP_IMGS['monster'],   extra: 10, retail: 59 },
+  { id: 'agua',       label: 'Agua',              labelEn: 'Water',           icon: '💧', img: CUP_IMGS['agua'],      extra: 0,    retail: 35 },
 ];
 
 const COFFEE_OPTIONS = [
@@ -1881,26 +1955,27 @@ const COFFEE_OPTIONS = [
 ];
 
 const SIDES_OPTIONS = [
-  { id: 'none',       label: 'Sin acompañamiento', labelEn: 'No side',         icon: '🙅', img: null, extra: 0,    retail: 0    },
-  { id: 'crisscuts',  label: 'Crisscuts',          labelEn: 'Crisscuts',       icon: '🍟', img: 'https://carlsjr.es/wp-content/uploads/2023/03/crisscuts-2.png', extra: 0,    retail: 2.50 },
-  { id: 'fries',      label: 'Patatas Fritas',     labelEn: 'French Fries',    icon: '🍟', img: 'https://carlsjr.es/wp-content/uploads/2023/03/Patatas-Fritas.png', extra: 0,    retail: 2.50 },
-  { id: 'nuggets',    label: 'Chicken Nuggets',    labelEn: 'Chicken Nuggets', icon: '🍗', img: 'https://carlsjr.es/wp-content/uploads/2023/03/Chicken-Nuggets.png', extra: 0,    retail: 3.00 },
-  { id: 'rings',      label: 'Aros de cebolla',    labelEn: 'Onion Rings',     icon: '⭕', img: 'https://carlsjr.es/wp-content/uploads/2023/03/crisscuts-2.png', extra: 0.50, retail: 3.00 },
+  { id: 'none',       label: 'Sin acompañamiento', labelEn: 'No side',         icon: '🙅', img: './iconos/ic-no.png', extra: 0,    retail: 0    },
+  { id: 'crisscuts',  label: 'Crisscuts',          labelEn: 'Crisscuts',       icon: '🍟', img: './iconos/ic-crisscuts.png', extra: 0,    retail: 65 },
+  { id: 'fries',      label: 'Patatas Fritas',     labelEn: 'French Fries',    icon: '🍟', img: './iconos/ic-papas.png', extra: 0,    retail: 55 },
+  { id: 'nuggets',    label: 'Chicken Nuggets',    labelEn: 'Chicken Nuggets', icon: '🍗', img: './iconos/ic-nuggets.png', extra: 0,    retail: 75 },
+  { id: 'rings',      label: 'Aros de cebolla',    labelEn: 'Onion Rings',     icon: '⭕', img: './iconos/ic-aros.png', extra: 14, retail: 79 },
 ];
 
 const DESSERT_OPTIONS = [
-  { id: 'none',        label: 'Sin postre',       labelEn: 'No dessert',       icon: '🙅', img: null, extra: 0 },
-  { id: 'twist-oreo',  label: 'Twist Oreo',       labelEn: 'Twist Oreo',       icon: '🍦', img: 'https://carlsjr.es/wp-content/uploads/2026/02/twist-oreo-1024x1024.png', extra: 3.95 },
-  { id: 'shake-oreo',  label: 'Shake Oreo',       labelEn: 'Oreo Shake',       icon: '🥛', img: 'https://carlsjr.es/wp-content/uploads/2023/03/American_Shake_Oreo_500x500.png', extra: 4.95 },
-  { id: 'shake-choc',  label: 'Shake Chocolate',  labelEn: 'Chocolate Shake',  icon: '🍫', img: 'https://carlsjr.es/wp-content/uploads/2023/03/American_Shake_Chocolate-500x500px.png', extra: 4.95 },
+  { id: 'none',        label: 'Sin postre',       labelEn: 'No dessert',       icon: '🙅', img: './iconos/ic-no.png', extra: 0 },
+  { id: 'twist-oreo',  label: 'Twist Oreo',       labelEn: 'Twist Oreo',       icon: '🍦', img: './iconos/ic-twist-oreo.png', extra: 65 },
+  { id: 'shake-oreo',  label: 'Shake Oreo',       labelEn: 'Oreo Shake',       icon: '🥛', img: './iconos/ic-shake-oreo.png', extra: 85 },
+  { id: 'shake-choc',  label: 'Shake Chocolate',  labelEn: 'Chocolate Shake',  icon: '🍫', img: './iconos/ic-shake-chocolate.png', extra: 85 },
 ];
 
+/* Iconos gráficos de los modificadores (láminas de la marca) */
 const BURGER_MODS = [
-  { id: 'no-onion',     label: 'Sin cebolla',   price: 0 },
-  { id: 'no-tomato',    label: 'Sin tomate',    price: 0 },
-  { id: 'no-sauce',     label: 'Sin salsa',     price: 0 },
-  { id: 'extra-cheese', label: '+Queso',        price: 0.80 },
-  { id: 'extra-bacon',  label: '+Bacon',        price: 1.20 },
+  { id: 'no-onion',     label: 'Sin cebolla',   price: 0,  img: './iconos/ic-cebolla.png' },
+  { id: 'no-tomato',    label: 'Sin tomate',    price: 0,  img: './iconos/ic-tomate.png' },
+  { id: 'no-sauce',     label: 'Sin salsa',     price: 0,  img: './iconos/ic-salsa.png' },
+  { id: 'extra-cheese', label: '+Queso',        price: 18, img: './iconos/ic-queso.png' },
+  { id: 'extra-bacon',  label: '+Bacon',        price: 25, img: './iconos/ic-bacon.png' },
 ];
 
 let comboState = {};
@@ -1970,15 +2045,15 @@ function openMysteryConfigurator(product) {
   safeModal($('comboDialog'));
 }
 
-const COMBO_STEPS = ['drink', 'side', 'dessert', 'mods'];
+/* INC-04: la personalización de la hamburguesa va primero, después el resto de opciones */
+const COMBO_STEPS = ['mods', 'side', 'drink', 'dessert'];
 
 function openComboConfigurator(product, mode = 'combo') {
-  const isSolo = mode === 'solo';
   comboState = {
     product, mode,
-    drink:   isSolo ? DRINKS_OPTIONS[0] : null,  // 'none' preselected for solo
-    side:    isSolo ? SIDES_OPTIONS[0]  : null,   // 'none' preselected for solo
-    dessert: isSolo ? DESSERT_OPTIONS[0]: null,   // 'none' preselected for solo
+    // En productos sueltos no hay opciones "Sin bebida/acompañamiento/postre":
+    // se empieza sin nada seleccionado y basta con no elegir nada.
+    drink: null, side: null, dessert: null,
     mods: [], qty: 1, step: 0
   };
   renderComboDialog();
@@ -2013,7 +2088,9 @@ function comboReady() {
 }
 
 function comboBlockMsg() {
-  if (comboState.mode === 'solo' || comboState.product?.isMystery) {
+  // Producto suelto: nada es obligatorio, se puede añadir sin extras.
+  if (comboState.mode === 'solo') return null;
+  if (comboState.product?.isMystery) {
     if (!comboState.drink) return '🥤 Elige tu bebida primero';
     return null;
   }
@@ -2039,7 +2116,11 @@ function renderComboDialog() {
     return price ? '+' + EUR.format(price) : t('included');
   };
 
-  const drinkHtml = DRINKS_OPTIONS.map(d => `
+  /* En productos sueltos se ocultan las opciones "Sin …": si el cliente no
+     quiere bebida, acompañamiento o postre, simplemente no selecciona nada. */
+  const pick = list => isSolo ? list.filter(o => o.id !== 'none') : list;
+
+  const drinkHtml = pick(DRINKS_OPTIONS).map(d => `
     <button class="combo-opt ${comboState.drink?.id === d.id ? 'selected' : ''}" data-drink="${d.id}" type="button">
       ${d.img ? `<img referrerpolicy="no-referrer" src="${d.img}" alt="${optLabel(d)}" onerror="this.style.opacity='.3'">` : `<span class="combo-opt-icon">${d.icon}</span>`}
       <div>
@@ -2049,7 +2130,7 @@ function renderComboDialog() {
     </button>
   `).join('');
 
-  const sideHtml = SIDES_OPTIONS.map(s => `
+  const sideHtml = pick(SIDES_OPTIONS).map(s => `
     <button class="combo-opt ${comboState.side?.id === s.id ? 'selected' : ''}" data-side="${s.id}" type="button">
       ${s.img ? `<img referrerpolicy="no-referrer" src="${s.img}" alt="${optLabel(s)}" onerror="this.style.display='none'">` : `<span class="combo-opt-icon">${s.icon}</span>`}
       <div>
@@ -2059,7 +2140,7 @@ function renderComboDialog() {
     </button>
   `).join('');
 
-  const dessertHtml = DESSERT_OPTIONS.map(d => `
+  const dessertHtml = pick(DESSERT_OPTIONS).map(d => `
     <button class="combo-opt ${comboState.dessert?.id === d.id ? 'selected' : ''}" data-dessert="${d.id}" type="button">
       ${d.img ? `<img referrerpolicy="no-referrer" src="${d.img}" alt="${optLabel(d)}" onerror="this.style.opacity='.3'">` : `<span class="combo-opt-icon">${d.icon}</span>`}
       <div>
@@ -2071,7 +2152,8 @@ function renderComboDialog() {
 
   const modsHtml = BURGER_MODS.map(m => `
     <button class="combo-mod ${comboState.mods.includes(m.id) ? 'active' : ''}" data-mod="${m.id}" type="button">
-      ${t('mod-' + m.id)}${m.price ? ` +${EUR.format(m.price)}` : ''}
+      ${m.img ? `<img class="combo-mod-img" src="${m.img}" alt="" onerror="this.remove()">` : ''}
+      <span class="combo-mod-label">${t('mod-' + m.id)}${m.price ? ` +${EUR.format(m.price)}` : ''}</span>
     </button>
   `).join('');
 
@@ -2128,9 +2210,14 @@ function renderComboDialog() {
   `;
 
   // Bind drink selection
+  /* En producto suelto se puede deseleccionar volviendo a tocar la opción,
+     ya que no existe un botón "Sin …" al que volver. */
+  const toggleSolo = (current, id) => (isSolo && current?.id === id) ? null : undefined;
+
   $('comboContent').querySelectorAll('[data-drink]').forEach(btn => {
     btn.addEventListener('click', () => {
-      comboState.drink = DRINKS_OPTIONS.find(d => d.id === btn.dataset.drink);
+      const off = toggleSolo(comboState.drink, btn.dataset.drink);
+      comboState.drink = off === null ? null : DRINKS_OPTIONS.find(d => d.id === btn.dataset.drink);
       renderComboDialog();
     });
   });
@@ -2138,7 +2225,8 @@ function renderComboDialog() {
   // Bind side selection
   $('comboContent').querySelectorAll('[data-side]').forEach(btn => {
     btn.addEventListener('click', () => {
-      comboState.side = SIDES_OPTIONS.find(s => s.id === btn.dataset.side);
+      const off = toggleSolo(comboState.side, btn.dataset.side);
+      comboState.side = off === null ? null : SIDES_OPTIONS.find(s => s.id === btn.dataset.side);
       renderComboDialog();
     });
   });
@@ -2146,7 +2234,8 @@ function renderComboDialog() {
   // Bind dessert selection
   $('comboContent').querySelectorAll('[data-dessert]').forEach(btn => {
     btn.addEventListener('click', () => {
-      comboState.dessert = DESSERT_OPTIONS.find(d => d.id === btn.dataset.dessert);
+      const off = toggleSolo(comboState.dessert, btn.dataset.dessert);
+      comboState.dessert = off === null ? null : DESSERT_OPTIONS.find(d => d.id === btn.dataset.dessert);
       renderComboDialog();
     });
   });
@@ -2181,10 +2270,12 @@ function renderComboDialog() {
 
     $('btnAddCombo').addEventListener('click', () => {
       if (!comboReady()) return;
+      // Solo se anota lo que el cliente ha elegido de verdad
+      const chosen = o => o && o.id !== 'none' ? o.label : null;
       const note = [
-        comboState.drink?.id !== 'none'    ? `Bebida: ${comboState.drink.label}` : '',
-        comboState.side?.id   !== 'none'   ? `Acomp: ${comboState.side.label}`   : '',
-        comboState.dessert?.id !== 'none'  ? `Postre: ${comboState.dessert.label}` : ''
+        chosen(comboState.drink)   ? `Bebida: ${comboState.drink.label}`   : '',
+        chosen(comboState.side)    ? `Acomp: ${comboState.side.label}`     : '',
+        chosen(comboState.dessert) ? `Postre: ${comboState.dessert.label}` : ''
       ].filter(Boolean).join(' · ');
 
       addToCart(comboState.product, comboState.mods, comboState.qty, note);
@@ -2317,7 +2408,7 @@ function showToast(msg) {
 
   const PLAYLIST = [
     { type: 'video', src: './promo1.mp4' },
-    { type: 'photo', src: './promo2.jpg', ms: 3_000 },
+    /* INC-01: promo2.jpg (Godzilla vs Kong) retirada — imagen pixelada */
     { type: 'video', src: './promo3.mp4' },
     { type: 'photo', src: './promo4.png', ms: 3_000 },
     { type: 'video', src: './promo5.mp4' },
