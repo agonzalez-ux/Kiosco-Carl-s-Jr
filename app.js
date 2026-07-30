@@ -629,11 +629,7 @@ function init() {
 
 /* ─── WELCOME ─── */
 function bindWelcome() {
-  $('btnStart').addEventListener('click', () => {
-    // gesto del usuario: momento válido para revalidar el permiso de la carpeta
-    ensureTicketPermission();
-    startApp(true);
-  });
+  $('btnStart').addEventListener('click', () => startApp(true));
   initSlider();
   applyI18n();
 }
@@ -713,7 +709,6 @@ function initSlider() {
 function bindTopbar() {
   $('btnBackToWelcome').addEventListener('click', () => location.reload());
   $('btnCartFab').addEventListener('click', openCart);
-  if ($('btnSetupTickets')) $('btnSetupTickets').addEventListener('click', setupTicketFolder);
 }
 
 /* ─── CATEGORY NAV ─── */
@@ -1637,19 +1632,18 @@ function _showSuccessScreen(orderNum, pts, cartSnapshot, total) {
     '¡Gracias por tu visita!',
   ].filter(Boolean).join('\n');
 
-  // Siempre se guarda el .txt en la carpeta de tickets configurada
-  saveTicketToFile(orderNum, receiptText);
-
   /* El ticket NO se imprime solo: únicamente si el cliente pulsa el botón.
-     Al pulsarlo se envía directo a la impresora, sin preguntar (para que no
-     aparezca la vista previa, Chrome debe lanzarse con --kiosk-printing). */
+     Al pulsarlo, todo pasa en segundo plano sin que el cliente vea nada:
+     se guarda el .txt y se manda a imprimir a través del ayudante local
+     (print-helper.js), sin ningún diálogo del navegador. */
   const btnPrint = $('btnPrintTicket');
   if (btnPrint) {
     btnPrint.disabled = false;
+    btnPrint.textContent = '🖨️ Imprimir ticket';
     btnPrint.onclick = () => {
-      printReceipt(receiptHtml);
       btnPrint.disabled = true;
       btnPrint.textContent = '🖨️ Imprimiendo…';
+      printTicketSilently(orderNum, receiptText, receiptHtml);
     };
   }
 
@@ -1695,150 +1689,44 @@ function animateDcBar(pct) {
   $('dcBar').style.width = pct + '%';
 }
 
-/* ─── TICKETS EN DISCO (File System Access API) ───
-   Guarda cada pedido como .txt en una carpeta local. La carpeta se elige UNA
-   VEZ desde el botón de configuración (setupTicketFolder) — nunca durante el
-   checkout de un cliente, para no interrumpirlo con un selector de archivos
-   del sistema operativo. Solo funciona en Chrome/Edge, abierto directamente
-   (no dentro de un iframe de terceros como Admira). */
-let _ticketDirHandle = null;
+/* ─── IMPRESIÓN SILENCIOSA DEL TICKET ───
+   Ningún navegador permite imprimir sin su diálogo de confirmación — es una
+   restricción de seguridad, no algo que se pueda evitar desde el código de
+   la página. La única forma de guardar el .txt e imprimir de verdad sin
+   preguntar nada es que un programa aparte, fuera del navegador, hable
+   directamente con la impresora: eso es print-helper.js (ver ese archivo),
+   un pequeño servidor que corre en el mismo PC del kiosco.
+   Aquí solo le pedimos, por HTTP, que guarde e imprima. Si por lo que sea
+   no está corriendo, se avisa por consola y se recurre al método antiguo
+   (diálogo del navegador) para que el ticket salga de todos modos. */
+const PRINT_HELPER_URL = 'http://localhost:5217/imprimir';
 
-function _openTicketsDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open('cj-tickets-db', 1);
-    req.onupgradeneeded = () => req.result.createObjectStore('handles');
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function _getStoredTicketDir() {
-  try {
-    const db = await _openTicketsDB();
-    return await new Promise((resolve) => {
-      const tx = db.transaction('handles', 'readonly');
-      const req = tx.objectStore('handles').get('ticketsDir');
-      req.onsuccess = () => resolve(req.result || null);
-      req.onerror = () => resolve(null);
+function printTicketSilently(orderNum, text, fallbackHtml) {
+  fetch(PRINT_HELPER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderNum, text }),
+  })
+    .then(r => r.json())
+    .then(res => {
+      const btnPrint = $('btnPrintTicket');
+      if (res && res.ok) {
+        console.log(`[Tickets] pedido-${orderNum}.txt guardado e impreso en segundo plano.`);
+        if (btnPrint) btnPrint.textContent = '🖨️ Ticket impreso';
+      } else {
+        console.warn('[Tickets] El ayudante de impresión respondió con error:', res);
+        if (btnPrint) { btnPrint.disabled = false; btnPrint.textContent = '🖨️ Imprimir ticket'; }
+      }
+    })
+    .catch(e => {
+      // El ayudante no está corriendo: se avisa solo por consola (no se
+      // interrumpe al cliente) y se cae al método del navegador como red
+      // de seguridad, para que el ticket salga de una forma u otra.
+      console.warn('[Tickets] No se pudo contactar con print-helper.js (¿está arrancado?):', e);
+      printReceipt(fallbackHtml);
+      const btnPrint = $('btnPrintTicket');
+      if (btnPrint) { btnPrint.disabled = false; btnPrint.textContent = '🖨️ Imprimir ticket'; }
     });
-  } catch { return null; }
-}
-
-async function _storeTicketDir(handle) {
-  try {
-    const db = await _openTicketsDB();
-    // Hay que esperar a que la transacción termine: si la página se recarga
-    // antes (la pantalla de éxito recarga a los 12 s) la carpeta no se guardaba.
-    await new Promise((resolve, reject) => {
-      const tx = db.transaction('handles', 'readwrite');
-      tx.objectStore('handles').put(handle, 'ticketsDir');
-      tx.oncomplete = resolve;
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error);
-    });
-  } catch (e) { console.warn('[Tickets] No se pudo guardar la carpeta:', e); }
-}
-
-// Solo comprueba/reusa el permiso ya concedido. NUNCA abre el selector de
-// carpetas — a diferencia de setupTicketFolder(), esto es seguro de llamar
-// en cualquier momento del checkout sin arriesgar interrumpir al cliente.
-async function _getGrantedTicketDir() {
-  if (_ticketDirHandle) return _ticketDirHandle;
-  const stored = await _getStoredTicketDir();
-  if (!stored) return null;
-  try {
-    const perm = await stored.queryPermission({ mode: 'readwrite' });
-    if (perm === 'granted') { _ticketDirHandle = stored; return stored; }
-  } catch (e) { console.warn('[Tickets] Carpeta guardada ya no es válida:', e); }
-  return null;
-}
-
-/* INC-07: tras reiniciar el navegador el permiso de la carpeta vuelve a
-   'prompt' y los tickets dejaban de guardarse en silencio. Se re-pide el
-   permiso al arrancar la sesión (con gesto del usuario), no en mitad del
-   cobro, para no interrumpir al cliente. */
-async function ensureTicketPermission() {
-  if (_ticketDirHandle) return true;
-  const stored = await _getStoredTicketDir();
-  if (!stored) return false;
-  try {
-    let perm = await stored.queryPermission({ mode: 'readwrite' });
-    if (perm !== 'granted') perm = await stored.requestPermission({ mode: 'readwrite' });
-    if (perm === 'granted') { _ticketDirHandle = stored; return true; }
-    console.warn('[Tickets] Permiso de carpeta denegado; los tickets no se guardarán en disco.');
-  } catch (e) { console.warn('[Tickets] No se pudo revalidar la carpeta:', e); }
-  return false;
-}
-
-// Acción explícita de configuración (botón "Configurar carpeta de tickets").
-// Debe llamarse directamente desde un clic real del usuario — es la única
-// función de este módulo que puede abrir el selector de carpetas del sistema.
-async function setupTicketFolder() {
-  if (typeof window.showDirectoryPicker !== 'function') {
-    showToast('⚠️ Tu navegador no soporta guardar tickets en disco');
-    return;
-  }
-  try {
-    const parent = await window.showDirectoryPicker({ mode: 'readwrite' });
-
-    // Asegura permiso de escritura sobre la ubicación elegida
-    let perm = await parent.queryPermission({ mode: 'readwrite' });
-    if (perm !== 'granted') perm = await parent.requestPermission({ mode: 'readwrite' });
-    if (perm !== 'granted') {
-      showToast('⚠️ Sin permiso de escritura en esa carpeta');
-      return;
-    }
-
-    // Dentro de la ubicación elegida se crea (o reutiliza) una carpeta "Tickets"
-    // donde se irán guardando todos los .txt.
-    const handle = await parent.getDirectoryHandle('Tickets', { create: true });
-    _ticketDirHandle = handle;
-    await _storeTicketDir(handle);
-
-    // Prueba de escritura real: si algo falla, el usuario se entera ahora y no
-    // cuando ya se han perdido los tickets de varios pedidos.
-    try {
-      const probe = await handle.getFileHandle('_prueba.txt', { create: true });
-      const w = await probe.createWritable();
-      await w.write('Carpeta de tickets configurada correctamente.\n');
-      await w.close();
-      await handle.removeEntry('_prueba.txt').catch(() => {});
-      showToast('✅ Carpeta "Tickets" creada y lista');
-    } catch (e) {
-      console.warn('[Tickets] No se pudo escribir en la carpeta:', e);
-      showToast('⚠️ La carpeta se creó pero no se puede escribir en ella');
-    }
-  } catch (e) {
-    if (e && e.name === 'AbortError') {
-      console.log('[Tickets] Selección de carpeta cancelada por el usuario.');
-      return;
-    }
-    console.warn('[Tickets] Error configurando la carpeta:', e);
-    showToast('⚠️ No se pudo configurar la carpeta de tickets');
-  }
-}
-
-async function saveTicketToFile(orderNum, text) {
-  const dir = await _getGrantedTicketDir();
-  if (!dir) {
-    // Sin carpeta configurada el pedido sigue su curso, pero se avisa para que
-    // no parezca que los tickets se guardan cuando en realidad no lo hacen.
-    console.warn('[Tickets] No hay carpeta configurada: el ticket no se ha guardado en disco.');
-    showToast('⚠️ Configura la carpeta con el botón 🗂 Tickets');
-    return false;
-  }
-  try {
-    const fileHandle = await dir.getFileHandle(`pedido-${orderNum}.txt`, { create: true });
-    const writable = await fileHandle.createWritable();
-    await writable.write(text);
-    await writable.close();
-    console.log(`[Tickets] Guardado pedido-${orderNum}.txt`);
-    return true;
-  } catch (e) {
-    console.warn('[Tickets] Error al guardar el ticket:', e);
-    showToast('⚠️ No se pudo guardar el ticket en disco');
-    return false;
-  }
 }
 
 /* ─── CONFETTI ─── */
