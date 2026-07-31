@@ -1844,11 +1844,11 @@ const DRINKS_OPTIONS = [
 ];
 
 const COFFEE_OPTIONS = [
-  { id: 'cafe-solo',    label: 'Café Solo',      labelEn: 'Espresso',      icon: '☕' },
-  { id: 'cafe-cortado', label: 'Cortado',        labelEn: 'Cortado',       icon: '☕' },
-  { id: 'cafe-leche',   label: 'Café con Leche', labelEn: 'Café Latte',    icon: '☕' },
-  { id: 'te-negro',     label: 'Té Negro',       labelEn: 'Black Tea',     icon: '🍵' },
-  { id: 'manzanilla',   label: 'Manzanilla',     labelEn: 'Chamomile Tea', icon: '🍵' },
+  { id: 'cafe-solo',    label: 'Café Solo',      labelEn: 'Espresso',      icon: '☕', img: './iconos/ic-cafe1.png' },
+  { id: 'cafe-cortado', label: 'Cortado',        labelEn: 'Cortado',       icon: '☕', img: './iconos/ic-cafe2.png' },
+  { id: 'cafe-leche',   label: 'Café con Leche', labelEn: 'Café Latte',    icon: '☕', img: './iconos/ic-cafe3.png' },
+  { id: 'te-negro',     label: 'Té Negro',       labelEn: 'Black Tea',     icon: '🍵', img: './iconos/ic-cafe4.png' },
+  { id: 'manzanilla',   label: 'Manzanilla',     labelEn: 'Chamomile Tea', icon: '🍵', img: './iconos/ic-cafe5.png' },
 ];
 
 const SIDES_OPTIONS = [
