@@ -1303,6 +1303,27 @@
     }
 
     /* ── START ORDER ── */
+    /* Suelta el pedido que se está preparando y lo devuelve a la cola como
+       pendiente. Se usa al irse de break o al cerrar la jornada: antes ese
+       pedido se le pasaba a un "compañero" simulado que lo daba por listo
+       automáticamente, y por eso los pedidos se acababan solos. */
+    function releaseActiveOrder() {
+      if (!activeOrderId) return;
+      const orders = getOrders();
+      const o = orders.find(x => x.timestamp === activeOrderTs);
+      if (o && (o.status === 'preparing' || o.status === 'rival_preparing')) {
+        o.status = 'pending';
+        delete o.preparingAt;
+        delete o.rivalWorker;
+        saveOrders(orders);
+      }
+      clearInterval(timerInterval);
+      timerInterval   = null;
+      activeOrderId   = null;
+      activeOrderTs   = null;
+      activeStartTime = null;
+    }
+
     function startOrder(order) {
       if (activeOrderId) {
         const orders = getOrders();
@@ -1708,6 +1729,15 @@
     document.getElementById('btnPodiumClose').addEventListener('click', () => {
       localStorage.removeItem(STORAGE_WORKERS);
       document.getElementById('podiumModal').hidden = true;
+
+      /* V3 KDS INC-01: cerrar la jornada tiene que SALIR de verdad, volviendo
+         a la pantalla de "¿Quién cocina hoy?". Al quitar el reload (que
+         colgaba el sistema) se había perdido esa salida y no se podía salir
+         aunque no quedaran pedidos. Se cierra sesión sin recargar. */
+      releaseActiveOrder();
+      currentWorker = null;
+      document.getElementById('workerModal').hidden = false;
+
       try { renderRanking(); } catch (_) {}
       try { render(); } catch (_) {}
     });
@@ -1790,44 +1820,13 @@
         const avatar = currentWorker?.avatar || '🧑‍🍳';
         const isShort = type === 'short';
 
-        // Assign abandoned order to a rival so it gets done ASAP
+        /* V3 KDS INC-02: al irse de break, el pedido en curso vuelve a la cola
+           como pendiente. Antes se le asignaba a un compañero simulado que lo
+           marcaba como listo al cabo de unos segundos, así que los pedidos se
+           daban por acabados solos sin que nadie los hubiera hecho. */
         if (activeOrderId) {
-          const abandonedTs = activeOrderTs;
-          const orders = getOrders();
-          const o = orders.find(x => x.timestamp === abandonedTs);
-          clearInterval(timerInterval);
-          timerInterval   = null;
-          activeOrderId   = null;
-          activeOrderTs   = null;
-          activeStartTime = null;
-
-          if (o) {
-            const rival = RIVAL_WORKERS[Math.floor(Math.random() * RIVAL_WORKERS.length)];
-            const diff  = calcDifficulty(o);
-            const cfg   = DIFF_CONFIG[diff];
-            // Mark as being handled by rival — disappears from pending queue immediately
-            o.status      = 'rival_preparing';
-            o.rivalWorker = rival.name;
-            saveOrders(orders);
-            render();
-
-            // Rival completes it in a realistic time (60-110% of target)
-            const simTime = Math.round(cfg.time * (0.60 + Math.random() * 0.50));
-            setTimeout(() => {
-              const current = getOrders();
-              const completing = current.find(x => x.timestamp === abandonedTs);
-              if (completing && completing.status === 'rival_preparing') {
-                completing.status = 'ready';
-                const pts = calcPoints(simTime, diff);
-                completing.pts = pts;
-                saveOrders(current);
-                addWorkerPoints(rival.id, rival.name, rival.avatar, pts);
-                renderRanking();
-              }
-            }, simTime * 1000);
-          } else {
-            render();
-          }
+          releaseActiveOrder();
+          render();
         }
 
         inner.className = 'break-screen-inner';
@@ -1855,9 +1854,9 @@
           screen.hidden = true;
           refreshHeaderPts();
           renderRanking();
-          const orders = getOrders();
-          const next = orders.find(o => o.status === 'pending');
-          if (next) startOrder(next); else render();
+          /* V3 KDS INC-02: al volver del break NO se arranca ningún pedido
+             automáticamente. El cocinero elige cuándo empezar. */
+          render();
         });
       }
 

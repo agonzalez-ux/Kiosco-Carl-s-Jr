@@ -801,10 +801,14 @@ function openDrinkPicker(p) {
   dialogProduct = p; dialogQty = 1; dialogMods = [];
   renderProductDialog(p);
 
-  // Inject variant selector before the footer
+  // Inject variant selector before the footer.
+  // Se usan las imágenes reales de cada vaso en vez de emojis de colores,
+  // que se veían genéricos y poco legibles.
   const variantHtml = opts.map(o => `
     <button class="combo-opt pick-variant" data-variant="${o.id}" type="button">
-      <span class="combo-opt-icon">${o.icon}</span>
+      ${o.img
+        ? `<img src="${o.img}" alt="" onerror="this.outerHTML='<span class=combo-opt-icon>${o.icon}</span>'">`
+        : `<span class="combo-opt-icon">${o.icon}</span>`}
       <div><div class="combo-opt-label">${o.label}</div></div>
     </button>`).join('');
   const extraSec = document.createElement('div');
@@ -956,7 +960,10 @@ function closeCart() {
   $('cartOverlay').hidden = true;
 }
 
-function addToCart(product, mods = [], qty = 1, note = '') {
+/* `extras` es el recargo de bebida/acompañamiento/postre elegidos en el
+   configurador. Sin él, el carrito cobraba solo el precio base del producto
+   aunque el modal hubiese mostrado un total mayor. */
+function addToCart(product, mods = [], qty = 1, note = '', extras = 0) {
   const modsSig = [...mods].sort().join(',');
   const existing = state.cart.find(i =>
     i.productId === product.id &&
@@ -972,6 +979,7 @@ function addToCart(product, mods = [], qty = 1, note = '') {
       name: product.name,
       img: product.img,
       unitPrice: product.price,
+      extras,
       mods,
       qty,
       note
@@ -1005,7 +1013,7 @@ function changeQty(key, delta) {
 }
 
 function cartLineTotal(item) {
-  return round((item.unitPrice + modTotal(item.mods)) * item.qty);
+  return round((item.unitPrice + modTotal(item.mods) + (item.extras || 0)) * item.qty);
 }
 
 function cartSummary() {
@@ -1177,9 +1185,9 @@ function openQuiz() {
 function getQuiz() {
   return [
     { id: 'protein', q: t('q1'), opts: [
-      { id: 'beef', icon: '🥩', label: t('q1o1') },
-      { id: 'chicken', icon: '🍗', label: t('q1o2') },
-      { id: 'plant', icon: '🌱', label: t('q1o3') }
+      { id: 'beef', icon: '🥩', img: './iconos/ic-carne.png', label: t('q1o1') },
+      { id: 'chicken', icon: '🍗', img: './iconos/ic-pollo.png', label: t('q1o2') },
+      { id: 'plant', icon: '🌱', img: './iconos/ic-lechuga.png', label: t('q1o3') }
     ]},
     { id: 'hunger', q: t('q2'), opts: [
       { id: 'low', icon: '🙂', label: t('q2o1') },
@@ -1197,9 +1205,9 @@ function getQuiz() {
       { id: 'full', icon: '🎉', label: t('q4o3') }
     ]},
     { id: 'sweet', q: t('q5'), opts: [
-      { id: 'shake', icon: '🥛', label: t('q5o1') },
-      { id: 'ice', icon: '🍦', label: t('q5o2') },
-      { id: 'none', icon: '🙅', label: t('q5o3') }
+      { id: 'shake', icon: '🥛', img: './iconos/ic-batido.png', label: t('q5o1') },
+      { id: 'ice', icon: '🍦', img: './iconos/ic-helado.png', label: t('q5o2') },
+      { id: 'none', icon: '🙅', img: './iconos/ic-no.png', label: t('q5o3') }
     ]}
   ];
 }
@@ -1491,8 +1499,7 @@ let activeCountdownTimer = null;
 
 function pushOrderToKDS(cartSnapshot, num) {
   try {
-    const orders = JSON.parse(localStorage.getItem('cj-kds-orders') || '[]');
-    orders.push({
+    const order = {
       id: num,
       timestamp: Date.now(),
       status: 'pending',
@@ -1504,8 +1511,10 @@ function pushOrderToKDS(cartSnapshot, num) {
         }).filter(Boolean);
         return { name: prod ? pName(prod) : i.name, qty: i.qty, mods: modLabels, img: prod?.img || null };
       })
-    });
-    CJSync.saveOrders(orders); // guarda en Firebase + localStorage
+    };
+    // Se añade sobre la lista real del servidor (transacción), no sobre la
+    // copia local: así no reaparecen pedidos ya finalizados en el KDS.
+    CJSync.addOrder(order);
   } catch(e) { console.warn('pushOrderToKDS error:', e); }
 }
 
@@ -1924,8 +1933,9 @@ function openMysteryConfigurator(product) {
   $('comboQtyMinus').addEventListener('click', () => { if (comboState.qty > 1) { comboState.qty--; updateComboPrices(); } });
   $('comboQtyPlus').addEventListener('click',  () => { if (comboState.qty < 9) { comboState.qty++; updateComboPrices(); } });
   $('btnAddCombo').addEventListener('click', () => {
+    if (!comboState.drink) return;
     const note = `Bebida: ${comboState.drink.label} · 🎲 Sorpresa`;
-    addToCart(comboState.product, [], comboState.qty, note);
+    addToCart(comboState.product, [], comboState.qty, note, comboState.drink.extra ?? 0);
     safeClose($('comboDialog'));
     showToast(t('mysteryRevealed'));
   });
@@ -2166,17 +2176,35 @@ function renderComboDialog() {
         chosen(comboState.dessert) ? `Postre: ${comboState.dessert.label}` : ''
       ].filter(Boolean).join(' · ');
 
-      addToCart(comboState.product, comboState.mods, comboState.qty, note);
+      // Recargo de los extras elegidos, para que el carrito cobre lo mismo
+      // que el total mostrado en el configurador.
+      const extras = optPrice(comboState.drink, 'extra')
+                   + optPrice(comboState.side,  'extra')
+                   + (comboState.dessert?.extra ?? 0);
+
+      addToCart(comboState.product, comboState.mods, comboState.qty, note, extras);
       safeClose($('comboDialog'));
     });
   }
 }
 
+/* Los controles de cantidad y el botón de añadir solo existen en el último
+   paso del asistente. Como los modificadores son ahora el PRIMER paso, esta
+   función se llama también cuando esos elementos todavía no están en el DOM:
+   por eso cada acceso va comprobado (antes lanzaba un TypeError y dejaba el
+   precio sin actualizar). */
 function updateComboPrices() {
   const total = comboTotal();
-  $('comboQtyVal').textContent = comboState.qty;
-  $('comboTotalPrice').textContent = EUR.format(total);
+
+  const qtyVal = $('comboQtyVal');
+  if (qtyVal) qtyVal.textContent = comboState.qty;
+
+  const totalEl = $('comboTotalPrice');
+  if (totalEl) totalEl.textContent = EUR.format(total);
+
   const btn = $('btnAddCombo');
+  if (!btn) return;
+
   const msg = comboBlockMsg();
   if (msg) {
     btn.disabled = true;

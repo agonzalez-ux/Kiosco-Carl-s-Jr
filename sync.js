@@ -171,5 +171,49 @@ const CJSync = (function () {
     });
   }
 
-  return { saveOrders, nextOrderNum, onOrdersChange, isEnabled, resetAll, activeOrders };
+  /* ── Añadir un pedido sin pisar lo que hayan hecho otros dispositivos ──
+     Antes el kiosco leía su copia local de pedidos, le añadía el nuevo y
+     guardaba TODO el array. Si esa copia estaba desfasada (típico al abrir
+     la URL desde la app de Admira, que es otro contexto de navegador),
+     volvían a aparecer pedidos que el KDS ya había dado por listos.
+     Con una transacción se parte siempre de la lista real del servidor. */
+  function addOrder(order, cb) {
+    _init();
+
+    const merge = (list) => {
+      const clean = activeOrders(list);
+      const dup = clean.some(o => Number(o.id) === Number(order.id) && o.timestamp === order.timestamp);
+      return dup ? clean : clean.concat([order]);
+    };
+
+    if (!ready) {
+      let list = [];
+      try { list = JSON.parse(localStorage.getItem(LS_ORDERS) || '[]'); } catch (_) {}
+      const merged = merge(list);
+      saveOrders(merged);
+      if (cb) cb(merged);
+      return;
+    }
+
+    db.ref(FB_PATH + '/orders').transaction(current => {
+      let list = [];
+      try { list = JSON.parse((current && current.data) || '[]'); } catch (_) {}
+      return { data: JSON.stringify(merge(list)), ts: Date.now() };
+    }).then(result => {
+      const val = result.snapshot.val();
+      let list = [];
+      try { list = JSON.parse((val && val.data) || '[]'); } catch (_) {}
+      try { localStorage.setItem(LS_ORDERS, JSON.stringify(list)); } catch (_) {}
+      if (cb) cb(list);
+    }).catch(e => {
+      console.warn('[CJSync] addOrder error:', e);
+      let list = [];
+      try { list = JSON.parse(localStorage.getItem(LS_ORDERS) || '[]'); } catch (_) {}
+      const merged = merge(list);
+      saveOrders(merged);
+      if (cb) cb(merged);
+    });
+  }
+
+  return { saveOrders, addOrder, nextOrderNum, onOrdersChange, isEnabled, resetAll, activeOrders };
 })();

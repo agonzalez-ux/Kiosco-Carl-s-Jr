@@ -699,7 +699,8 @@ a { -webkit-tap-highlight-color: transparent; }
   background: var(--dark3); border-radius: var(--radius);
   padding: 14px 16px; text-align: center;
 }
-.ticket-guest p { font-size: .82rem; color: var(--mid); margin-bottom: 10px; }
+/* Este texto iba en gris oscuro (#555) sobre fondo casi negro y no se leía */
+.ticket-guest p { font-size: .82rem; color: #EDEDED; margin-bottom: 10px; }
 .btn-ticket-register {
   background: transparent; border: 1.5px solid var(--yellow);
   color: var(--yellow); border-radius: var(--radius-sm);
@@ -1236,7 +1237,7 @@ a { -webkit-tap-highlight-color: transparent; }
   font-family: var(--font); font-weight: 800; font-size: 1.7rem;
   text-transform: uppercase; color: var(--white); text-align: center;
 }
-.rd-content p { font-size: .82rem; color: var(--mid); text-align: center; }
+.rd-content p { font-size: .82rem; color: #EDEDED; text-align: center; }
 .rd-content .ls-form { width: 100%; }
 
 /* ORDER SUMMARY */
@@ -1553,4 +1554,75 @@ dialog[open] {
   .btn-print-ticket { font-size:1.5rem; padding:22px 26px; margin:18px 0 26px; }
   .order-summary { font-size:1.25rem; padding:24px 26px; }
   .os-title { font-size:1.1rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REPORTE V3 — Ajustes visuales
+   ═══════════════════════════════════════════════════════════════ */
+
+/* INC-03: en los modales el texto y el botón quedaban pegados a la izquierda.
+   El botón no se centraba porque <button> es inline-block y `margin:auto`
+   no lo centra: hace falta display:block. */
+.pd-body { text-align: center; }
+.pd-tags { justify-content: center; }
+.pd-qty-row { justify-content: center; }
+.btn-add-cart { display: block; margin-left: auto; margin-right: auto; }
+.combo-body .combo-section h3 { text-align: left; }
+
+@media (min-width: 900px) {
+  /* INC-04: el modal de bebidas se veía apretado */
+  .pd-variant-section { padding: 8px clamp(40px, 9vw, 120px) 4px; }
+  .pd-variant-section h3 { text-align: center; margin-bottom: 22px; }
+  .pd-variant-section .combo-options { justify-content: center; gap: 18px; }
+  .pd-variant-section .combo-opt { padding: 20px 26px; min-width: 250px; }
+  .pd-variant-section .combo-opt img { width: 68px; height: 68px; }
+  .pd-variant-section .combo-opt-label { font-size: 1.5rem; }
+  .pd-desc { margin-bottom: 6px; }
+
+  /* INC-05: el contenido del quiz se perdía dentro de recuadros grandes */
+  .quiz-option { min-height: 250px; gap: 22px; padding: 30px 20px; }
+  .quiz-option-img { width: 130px; height: 130px; }
+  .quiz-option-icon { font-size: 4.5rem; }
+  .quiz-option-label { font-size: 1.6rem; line-height: 1.25; }
+  .quiz-q-title { font-size: 2.6rem; }
+  .quiz-q-eyebrow { font-size: 1.1rem; }
+  .quiz-step-label { font-size: 1.15rem; }
+  .quiz-back { font-size: 1.3rem; }
+
+  /* INC-06: "Crea tu cuenta" apretado y con el texto saliéndose del botón */
+  .register-dialog { width: min(92vw, 720px); }
+  .rd-content { gap: 20px; padding: 52px 56px; }
+  .rd-content h2 { font-size: 2.4rem; }
+  .rd-content p { font-size: 1.2rem; }
+  .ls-field span { font-size: 1.1rem; }
+  .ls-field input { font-size: 1.3rem; padding: 20px 22px; }
+  .rd-content .ls-submit { width: 100%; }
+  .rd-content .ls-submit .btn-start-inner {
+    padding: 22px 20px; font-size: 1.4rem;
+    white-space: normal; letter-spacing: .02em;
+  }
+}
+
+/* INC-07: el sidebar se veía demasiado brillante y borroso.
+   Se quita la fuente de titulares (muy gruesa a este tamaño), se suaviza
+   la sombra del texto y se bajan los halos de luz. */
+@media (min-width: 900px) {
+  .cat-tab, .cat-nav-ai {
+    font-family: var(--font);
+    font-weight: 600;
+    font-size: .78rem;
+    letter-spacing: .02em;
+    text-shadow: 0 1px 1px rgba(0,0,0,.75);
+  }
+  .cat-tab .cat-icon, .cat-nav-ai-sparkle {
+    font-size: 1.65rem;
+    filter: none;
+  }
+  .cat-tab.active {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 0 10px rgba(238,0,30,.4);
+  }
+  .cat-nav-ai {
+    box-shadow: inset 0 0 6px rgba(255,255,255,.35), 0 0 8px rgba(240,233,26,.35);
+    text-shadow: none;
+  }
 }
