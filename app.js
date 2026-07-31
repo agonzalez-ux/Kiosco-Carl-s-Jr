@@ -607,6 +607,30 @@ function modTotal(mods) {
   return mods.reduce((s, id) => s + (MODIFIERS.find(m => m.id === id)?.price || 0), 0);
 }
 
+/* ─── FORMATO DEL TICKET DE 80 MM ───
+   La Epson TM-m30II permite aproximadamente 48 caracteres
+   por línea usando la fuente estándar A. */
+const TICKET_COLUMNS = 48;
+
+function centerTicketText(value, width = TICKET_COLUMNS) {
+  const text = String(value).slice(0, width);
+  const spaces = Math.max(0, Math.floor((width - text.length) / 2));
+
+  return ' '.repeat(spaces) + text;
+}
+
+function ticketRow(left, right, width = TICKET_COLUMNS) {
+  const rightText = String(right);
+  const availableLeft = Math.max(1, width - rightText.length - 1);
+  const leftText = String(left).slice(0, availableLeft);
+  const spaces = Math.max(
+    1,
+    width - leftText.length - rightText.length
+  );
+
+  return leftText + ' '.repeat(spaces) + rightText;
+}
+
 /* ─── INIT ─── */
 document.addEventListener('DOMContentLoaded', init);
 
@@ -1598,28 +1622,54 @@ function _showSuccessScreen(orderNum, pts, cartSnapshot, total) {
     });
   }
 
-  // Construir recibo imprimible — se imprime en un iframe aislado
-  // (evita que Admira imprima la página completa del reproductor en blanco)
-  const receiptDate = new Date().toLocaleString('es-ES', { dateStyle:'short', timeStyle:'short' });
-  const receiptText = [
-    "CARL'S JR",
-    'Bigger. Better. Burgers.',
-    receiptDate,
-    '----------------------------------------',
-    `PEDIDO #${orderNum}`,
-    '----------------------------------------',
-    ...cartSnapshot.map(i => {
-      const pr = productById(i.productId);
-      const name = pr ? pName(pr) : i.name;
-      const line = EUR.format(cartLineTotal(i));
-      return `${i.qty}x ${name}  ${line}`;
-    }),
-    '----------------------------------------',
-    `TOTAL: ${EUR.format(total)}`,
-    '----------------------------------------',
-    !state.isGuest ? `+${pts} puntos acumulados` : '',
-    '¡Gracias por tu visita!',
-  ].filter(Boolean).join('\n');
+// Construir el texto del ticket para la Epson TM-m30II
+// usando papel de 80 mm y 48 caracteres por línea.
+const receiptDate = new Date().toLocaleString('es-ES', {
+  dateStyle: 'short',
+  timeStyle: 'short'
+});
+
+const rule = '-'.repeat(TICKET_COLUMNS);
+
+const receiptLines = [
+  centerTicketText("CARL'S JR"),
+  centerTicketText('Bigger. Better. Burgers.'),
+  centerTicketText(receiptDate),
+
+  rule,
+  centerTicketText(`PEDIDO #${orderNum}`),
+  rule,
+
+  ...cartSnapshot.map(item => {
+    const product = productById(item.productId);
+    const name = product ? pName(product) : item.name;
+
+    const price = EUR
+      .format(cartLineTotal(item))
+      .replace(/\u00A0/g, ' ');
+
+    return ticketRow(`${item.qty}x ${name}`, price);
+  }),
+
+  rule,
+
+  ticketRow(
+    'TOTAL',
+    EUR.format(total).replace(/\u00A0/g, ' ')
+  ),
+
+  rule,
+
+  ...(state.isGuest
+    ? []
+    : [centerTicketText(`+${pts} puntos acumulados`)]),
+
+  '',
+  centerTicketText('Gracias por tu visita'),
+  ''
+];
+
+const receiptText = receiptLines.join('\n');
 
   /* El ticket NO se imprime solo: únicamente si el cliente pulsa el botón.
      Al pulsarlo, todo pasa en segundo plano sin que el cliente vea nada:
