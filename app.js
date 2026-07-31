@@ -1601,26 +1601,6 @@ function _showSuccessScreen(orderNum, pts, cartSnapshot, total) {
   // Construir recibo imprimible — se imprime en un iframe aislado
   // (evita que Admira imprima la página completa del reproductor en blanco)
   const receiptDate = new Date().toLocaleString('es-ES', { dateStyle:'short', timeStyle:'short' });
-  const receiptHtml = `
-    <div class="ticket-logo">CARL'S JR</div>
-    <div class="ticket-tag">Bigger. Better. Burgers.</div>
-    <div class="ticket-date">${receiptDate}</div>
-    <div class="ticket-rule"></div>
-    <div class="ticket-order">PEDIDO #${orderNum}</div>
-    <div class="ticket-rule"></div>
-    ${cartSnapshot.map(i => {
-      const pr = productById(i.productId);
-      const name = pr ? pName(pr) : i.name;
-      const line = EUR.format(cartLineTotal(i));
-      return `<div class="ticket-line"><span>${i.qty}× ${name}</span><span>${line}</span></div>`;
-    }).join('')}
-    <div class="ticket-rule"></div>
-    <div class="ticket-line ticket-total"><span>TOTAL</span><span>${EUR.format(total)}</span></div>
-    <div class="ticket-rule"></div>
-    ${!state.isGuest ? `<div class="ticket-pts">+${pts} puntos acumulados ⭐</div>` : ''}
-    <div class="ticket-thanks">¡Gracias por tu visita!</div>
-  `;
-
   const receiptText = [
     "CARL'S JR",
     'Bigger. Better. Burgers.',
@@ -1652,8 +1632,7 @@ function _showSuccessScreen(orderNum, pts, cartSnapshot, total) {
     btnPrint.onclick = () => {
       btnPrint.disabled = true;
       btnPrint.textContent = '🖨️ Imprimiendo…';
-      printTicketSilently(orderNum, receiptText, receiptHtml);
-    };
+      printTicketSilently(orderNum, receiptText);    };
   }
 
   $('checkoutPayment').hidden = true;
@@ -1710,86 +1689,55 @@ function animateDcBar(pct) {
    (diálogo del navegador) para que el ticket salga de todos modos. */
 const PRINT_HELPER_URL = 'http://localhost:5217/imprimir';
 
-function printTicketSilently(orderNum, text, fallbackHtml) {
+function printTicketSilently(orderNum, text) {
   fetch(PRINT_HELPER_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderNum, text }),
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      orderNum,
+      text
+    }),
   })
-    .then(r => r.json())
-    .then(res => {
+    .then(async response => {
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || `Error HTTP ${response.status}`);
+      }
+
+      return result;
+    })
+    .then(() => {
       const btnPrint = $('btnPrintTicket');
-      if (res && res.ok) {
-        console.log(`[Tickets] pedido-${orderNum}.txt guardado e impreso en segundo plano.`);
-        if (btnPrint) btnPrint.textContent = '🖨️ Ticket impreso';
-      } else {
-        console.warn('[Tickets] El ayudante de impresión respondió con error:', res);
-        if (btnPrint) { btnPrint.disabled = false; btnPrint.textContent = '🖨️ Imprimir ticket'; }
+
+      console.log(
+        `[Tickets] pedido-${orderNum}.txt enviado a la impresora.`
+      );
+
+      if (btnPrint) {
+        btnPrint.disabled = true;
+        btnPrint.textContent = '🖨️ Ticket impreso';
       }
     })
-    .catch(e => {
-      // El ayudante no está corriendo: se avisa solo por consola (no se
-      // interrumpe al cliente) y se cae al método del navegador como red
-      // de seguridad, para que el ticket salga de una forma u otra.
-      console.warn('[Tickets] No se pudo contactar con print-helper.js (¿está arrancado?):', e);
-      printReceipt(fallbackHtml);
+    .catch(error => {
+      console.warn(
+        '[Tickets] No se pudo imprimir mediante print-helper.js:',
+        error
+      );
+
       const btnPrint = $('btnPrintTicket');
-      if (btnPrint) { btnPrint.disabled = false; btnPrint.textContent = '🖨️ Imprimir ticket'; }
+
+      if (btnPrint) {
+        btnPrint.disabled = false;
+        btnPrint.textContent = '⚠️ Reintentar impresión';
+      }
     });
 }
 
 /* ─── CONFETTI ─── */
 let _confettiFrame = null;
-/* ─── IMPRESIÓN DE TICKET (iframe aislado, tamaño de ticket térmico) ─── */
-function printReceipt(bodyHtml) {
-  const existing = document.getElementById('print-frame');
-  if (existing) existing.remove();
-
-  const iframe = document.createElement('iframe');
-  iframe.id = 'print-frame';
-  iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;visibility:hidden;';
-  document.body.appendChild(iframe);
-
-  const doc = iframe.contentDocument;
-  doc.open();
-  doc.write(`<!doctype html>
-<html><head><meta charset="utf-8"><title></title>
-<style>
-  @page { size: 80mm auto; margin: 0; }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
-  body {
-    width: 80mm; padding: 4mm 5mm; color: #000;
-    font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;
-  }
-  .ticket-logo { text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 2px; }
-  .ticket-tag  { text-align: center; font-size: 10px; color: #333; }
-  .ticket-date { text-align: center; font-size: 10px; color: #333; margin-top: 2px; }
-  .ticket-rule { border-top: 1px dashed #000; margin: 6px 0; }
-  .ticket-order { text-align: center; font-size: 22px; font-weight: 900; }
-  .ticket-line { display: flex; justify-content: space-between; margin: 3px 0; }
-  .ticket-total { font-weight: 900; font-size: 14px; }
-  .ticket-pts, .ticket-thanks { text-align: center; font-size: 10px; color: #333; margin-top: 4px; }
-</style>
-</head><body>${bodyHtml}</body></html>`);
-  doc.close();
-
-  iframe.onload = () => {
-    const win = iframe.contentWindow;
-    win.focus();
-    win.print();
-
-    win.addEventListener('afterprint', () => {
-      setTimeout(() => iframe.remove(), 300);
-    });
-
-    setTimeout(() => {
-      if (document.getElementById('print-frame')) {
-        iframe.remove();
-      }
-    }, 2000);
-  };
-}
 
 /* INC-09: efecto de confeti retirado. Se conserva la función como no-op
    para no romper las llamadas existentes. */
