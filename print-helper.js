@@ -66,17 +66,19 @@ function safeOrderNum(n) {
 // que no hay ventana que parpadee, y al ir el texto tal cual, la impresora
 // lo imprime con su fuente monoespaciada a todo el ancho (sin márgenes).
 function printFileSilently(text, cb) {
-  // La impresora de tickets suele necesitar un salto de página/corte al
-  // final. \x0A saltos + \x1D \x56 \x00 es el comando ESC/POS de corte;
-  // si tu modelo no lo soporta, deja solo los saltos de línea.
-  const payload = text + '\n\n\n\n';
+  const payload = Buffer.concat([
+    Buffer.from(text + '\n\n\n\n', 'utf8'),
+    Buffer.from([0x1D, 0x56, 0x00]) // GS V 0: corte completo
+  ]);
 
-  fs.writeFile(PRINTER_PATH, payload, { encoding: 'utf8' }, (err) => {
-    if (err) { cb(err); return; }
+  fs.writeFile(PRINTER_PATH, payload, (err) => {
+    if (err) {
+      cb(err);
+      return;
+    }
     cb(null);
   });
 }
-
 const server = http.createServer((req, res) => {
   withCors(res);
 
