@@ -51,11 +51,24 @@ function safeOrderNum(n) {
 
 // Envía el archivo a la impresora predeterminada de Windows sin abrir
 // ninguna ventana ni diálogo, usando PowerShell en segundo plano.
+//
+// El ticket lleva códigos de control ESC/POS (negrita, tamaño doble para
+// el nombre y el número de pedido). Con Out-Printer esos códigos no se
+// interpretan: Out-Printer dibuja el texto con una fuente fija (GDI), así
+// que la negrita/tamaño no llegaría nunca al papel. Por eso se manda en
+// modo RAW (raw-print.ps1), que escribe los bytes tal cual en la
+// impresora para que sea ELLA quien los interprete como comandos.
+const RAW_PRINT_SCRIPT = path.join(__dirname, 'raw-print.ps1');
+
 function printFileSilently(filePath, cb) {
-  const psCommand = `Get-Content -LiteralPath "${filePath}" -Raw -Encoding UTF8 | Out-Printer`;
   execFile(
     'powershell.exe',
-    ['-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden', '-Command', psCommand],
+    [
+      '-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden',
+      '-ExecutionPolicy', 'Bypass',
+      '-File', RAW_PRINT_SCRIPT,
+      '-FilePath', filePath
+    ],
     { windowsHide: true, timeout: 15000 },
     (err, stdout, stderr) => {
       if (err) { cb(err); return; }

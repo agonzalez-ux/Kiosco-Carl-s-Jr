@@ -612,6 +612,25 @@ function modTotal(mods) {
    por línea usando la fuente estándar A. */
 const TICKET_COLUMNS = 48;
 
+/* ─── COMANDOS ESC/POS ───
+   El nombre, el número de pedido y el total necesitan verse en negrita
+   y/o grande en el papel, pero eso no se consigue con texto plano: hay
+   que mandarle a la impresora sus propios códigos de control (ESC/POS),
+   que es el lenguaje que entienden las impresoras térmicas de tickets.
+   Para que estos códigos lleguen intactos a la impresora, print-helper.js
+   tiene que enviarlos en modo RAW (ver ese archivo); con impresión GDI
+   normal (Out-Printer) estos bytes de control no se interpretan y
+   saldrían como caracteres extraños. */
+const ESC = '\x1B';
+const GS  = '\x1D';
+const PRN_INIT          = `${ESC}@`;      // reinicia el estado de la impresora
+const PRN_ALIGN_LEFT    = `${ESC}a\x00`;
+const PRN_ALIGN_CENTER  = `${ESC}a\x01`;
+const PRN_BOLD_ON       = `${ESC}E\x01`;
+const PRN_BOLD_OFF      = `${ESC}E\x00`;
+const PRN_SIZE_DOUBLE   = `${GS}!\x11`;   // doble ancho + doble alto
+const PRN_SIZE_NORMAL   = `${GS}!\x00`;
+
 function centerTicketText(value, width = TICKET_COLUMNS) {
   const text = String(value).slice(0, width);
   const spaces = Math.max(0, Math.floor((width - text.length) / 2));
@@ -1632,13 +1651,13 @@ const receiptDate = new Date().toLocaleString('es-ES', {
 const rule = '-'.repeat(TICKET_COLUMNS);
 
 const receiptLines = [
-  centerTicketText("CARL'S JR"),
+  PRN_INIT + PRN_ALIGN_CENTER + PRN_BOLD_ON + PRN_SIZE_DOUBLE + "CARL'S JR" + PRN_SIZE_NORMAL + PRN_BOLD_OFF,
   centerTicketText('Bigger. Better. Burgers.'),
   centerTicketText(receiptDate),
 
-  rule,
-  centerTicketText(`PEDIDO #${orderNum}`),
-  rule,
+  PRN_ALIGN_LEFT + rule,
+  PRN_ALIGN_CENTER + PRN_BOLD_ON + PRN_SIZE_DOUBLE + `PEDIDO #${orderNum}` + PRN_SIZE_NORMAL + PRN_BOLD_OFF,
+  PRN_ALIGN_LEFT + rule,
 
   ...cartSnapshot.map(item => {
     const product = productById(item.productId);
@@ -1653,10 +1672,10 @@ const receiptLines = [
 
   rule,
 
-  ticketRow(
+  PRN_BOLD_ON + ticketRow(
     'TOTAL',
     EUR.format(total).replace(/\u00A0/g, ' ')
-  ),
+  ) + PRN_BOLD_OFF,
 
   rule,
 
