@@ -1,38 +1,50 @@
 'use strict';
 
-/* ═══════════════════════════════════════════════════════════════
+/* ═════════════════════════════════════════════════
    CARL'S JR — Ayudante de impresión de tickets (proceso local)
-   ═══════════════════════════════════════════════════════════════
+   ═════════════════════════════════════════════════
    Por qué existe este archivo:
-   Ninguna página web puede imprimir sin el diálogo de confirmación
-   del navegador — es una restricción de seguridad de todos los
-   navegadores, no depende del código de la página. La única forma
-   de imprimir "de verdad" en silencio, sin preguntar nada, es que
-   algo FUERA del navegador hable directamente con la impresora.
-   Este script es exactamente eso: un pequeño servidor que corre en
-   el mismo PC del kiosco, recibe el texto del ticket, lo guarda como
-   .txt y lo manda a la impresora predeterminada de Windows sin abrir
-   ninguna ventana ni pedir confirmación.
-
+     Ninguna página web puede imprimir sin el diálogo de confirmación
+     del navegador — es una restricción de seguridad de todos los
+     navegadores, no depende del código de la página. La única forma
+     de imprimir "de verdad" en silencio, sin preguntar nada, es que
+     algo FUERA del navegador hable directamente con la impresora.
+     Este script es exactamente eso: un pequeño servidor que corre en
+     el mismo PC del kiosco, recibe el texto del ticket, lo guarda como
+     .txt y lo envía directamente a la impresora de tickets.
+   Cómo imprime (sin PowerShell, sin ventanas, sin márgenes):
+     En vez de lanzar ningún programa externo (que provocaba el parpadeo
+     de una ventana y además dejaba márgenes grandes porque Windows
+     renderizaba el .txt con su fuente y márgenes propios), volcamos el
+     texto CRUDO directamente al recurso compartido de la impresora
+     (\\\\localhost\\<PRINTER_SHARE>). Así la impresora usa su propia
+     fuente monoespaciada de 48 columnas y aprovecha todo el ancho del
+     papel de 80 mm, y como no se abre ningún proceso, no hay ninguna
+     ventana que parpadee.
+   Requisito ÚNICO en Windows:
+     Compartir la impresora. Panel de control → Dispositivos e impresoras
+     → clic derecho en la Epson → Propiedades de impresora → pestaña
+     "Compartir" → marcar "Compartir esta impresora" → nombre: TICKETS
+     (o el que pongas abajo en PRINTER_SHARE).
    Cómo se usa:
-   1. node print-helper.js          (o hacer doble clic en
-      iniciar-impresora.bat, que lo deja corriendo en segundo plano)
-   2. El kiosco (kiosk.html / app.js) le habla por HTTP en
-      http://localhost:5217 cada vez que el cliente pulsa
-      "Imprimir ticket". Todo esto pasa en segundo plano: el cliente
-      no ve ninguna ventana ni mensaje del sistema.
-
-   Requisitos: Node.js instalado en el PC del kiosco. No usa ninguna
-   librería externa (solo módulos incluidos en Node).
-   ═══════════════════════════════════════════════════════════════ */
+     1. node print-helper.js  (o doble clic en iniciar-impresora.vbs)
+     2. El kiosco le habla por HTTP en http://localhost:5217 al pulsar
+        "Imprimir ticket". Todo pasa en segundo plano.
+   Requisitos: Node.js instalado en el PC del kiosco. Sin librerías
+   externas (solo módulos incluidos en Node).
+   ═════════════════════════════════════════════════ */
 
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { execFile } = require('child_process');
 
 const PORT = 5217;
 const TICKETS_DIR = path.join(__dirname, 'tickets-impresos');
+
+// Nombre del recurso compartido de la impresora en Windows.
+// Debe coincidir EXACTAMENTE con el nombre que pusiste al compartirla.
+const PRINTER_SHARE = 'TICKETS';
+const PRINTER_PATH = `\\\\localhost\\${PRINTER_SHARE}`;
 
 if (!fs.existsSync(TICKETS_DIR)) fs.mkdirSync(TICKETS_DIR, { recursive: true });
 
@@ -49,34 +61,24 @@ function safeOrderNum(n) {
   return s || 'sin-numero';
 }
 
-// Envía el archivo a la impresora predeterminada de Windows sin abrir
-// ninguna ventana ni diálogo, usando PowerShell en segundo plano.
-//
-// El ticket lleva códigos de control ESC/POS (negrita, tamaño doble para
-// el nombre y el número de pedido). Con Out-Printer esos códigos no se
-// interpretan: Out-Printer dibuja el texto con una fuente fija (GDI), así
-// que la negrita/tamaño no llegaría nunca al papel. Por eso se manda en
-// modo RAW (raw-print.ps1), que escribe los bytes tal cual en la
-// impresora para que sea ELLA quien los interprete como comandos.
-const RAW_PRINT_SCRIPT = path.join(__dirname, 'raw-print.ps1');
+// Envía el ticket a la impresora escribiendo el texto CRUDO directamente
+// al recurso compartido de la impresora. No se lanza ningún proceso, así
+// que no hay ventana que parpadee, y al ir el texto tal cual, la impresora
+// lo imprime con su fuente monoespaciada a todo el ancho (sin márgenes).
+function printFileSilently(text, cb) {
+  const payload = Buffer.concat([
+    Buffer.from(text + '\n\n\n\n', 'utf8'),
+    Buffer.from([0x1D, 0x56, 0x00]) // GS V 0: corte completo
+  ]);
 
-function printFileSilently(filePath, cb) {
-  execFile(
-    'powershell.exe',
-    [
-      '-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden',
-      '-ExecutionPolicy', 'Bypass',
-      '-File', RAW_PRINT_SCRIPT,
-      '-FilePath', filePath
-    ],
-    { windowsHide: true, timeout: 15000 },
-    (err, stdout, stderr) => {
-      if (err) { cb(err); return; }
-      cb(null);
+  fs.writeFile(PRINTER_PATH, payload, (err) => {
+    if (err) {
+      cb(err);
+      return;
     }
-  );
+    cb(null);
+  });
 }
-
 const server = http.createServer((req, res) => {
   withCors(res);
 
@@ -107,26 +109,27 @@ const server = http.createServer((req, res) => {
         return;
       }
 
+      // Guardamos una copia del ticket como respaldo/historial.
       const filePath = path.join(TICKETS_DIR, `pedido-${orderNum}.txt`);
       fs.writeFile(filePath, text, 'utf8', (writeErr) => {
         if (writeErr) {
           console.warn('[print-helper] Error guardando el ticket:', writeErr);
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ ok: false, error: 'No se pudo guardar el ticket' }));
-          return;
+          // No es crítico: seguimos intentando imprimir de todos modos.
+        } else {
+          console.log(`[print-helper] Guardado ${filePath}`);
         }
-        console.log(`[print-helper] Guardado ${filePath}`);
 
-        printFileSilently(filePath, (printErr) => {
+        printFileSilently(text, (printErr) => {
           if (printErr) {
             console.warn('[print-helper] Error al imprimir:', printErr);
+            console.warn(`[print-helper] ¿Está la impresora compartida como "${PRINTER_SHARE}"?`);
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ ok: false, saved: true, error: 'No se pudo enviar a la impresora' }));
+            res.end(JSON.stringify({ ok: false, saved: !writeErr, error: 'No se pudo enviar a la impresora' }));
             return;
           }
           console.log(`[print-helper] Enviado a la impresora: pedido-${orderNum}`);
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ ok: true, saved: true, printed: true }));
+          res.end(JSON.stringify({ ok: true, saved: !writeErr, printed: true }));
         });
       });
     });
@@ -139,5 +142,6 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`[print-helper] Escuchando en http://localhost:${PORT}`);
+  console.log(`[print-helper] Impresora compartida esperada: ${PRINTER_PATH}`);
   console.log(`[print-helper] Tickets guardados en: ${TICKETS_DIR}`);
 });
