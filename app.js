@@ -617,19 +617,24 @@ const TICKET_COLUMNS = 48;
    y/o grande en el papel, pero eso no se consigue con texto plano: hay
    que mandarle a la impresora sus propios códigos de control (ESC/POS),
    que es el lenguaje que entienden las impresoras térmicas de tickets.
-   Para que estos códigos lleguen intactos a la impresora, print-helper.js
-   tiene que enviarlos en modo RAW (ver ese archivo); con impresión GDI
-   normal (Out-Printer) estos bytes de control no se interpretan y
-   saldrían como caracteres extraños. */
+   print-helper.js manda el texto tal cual (crudo) a la impresora, así
+   que estos bytes de control le llegan intactos y es ella quien los
+   interpreta.
+
+   Para "grande + negrita" se usa ESC ! (Select print mode) en vez de
+   GS ! (Select character size): ESC ! es el comando más antiguo y básico
+   de todos, así que lo soportan hasta los clones más baratos; GS ! es
+   más moderno y algunas impresoras/clones lo ignoran, que es justo lo
+   que pasaba: los códigos llegaban pero la impresora no los aplicaba. */
 const ESC = '\x1B';
-const GS  = '\x1D';
 const PRN_INIT          = `${ESC}@`;      // reinicia el estado de la impresora
 const PRN_ALIGN_LEFT    = `${ESC}a\x00`;
 const PRN_ALIGN_CENTER  = `${ESC}a\x01`;
 const PRN_BOLD_ON       = `${ESC}E\x01`;
 const PRN_BOLD_OFF      = `${ESC}E\x00`;
-const PRN_SIZE_DOUBLE   = `${GS}!\x11`;   // doble ancho + doble alto
-const PRN_SIZE_NORMAL   = `${GS}!\x00`;
+// ESC ! n: bit3 = negrita, bit4 = doble alto, bit5 = doble ancho
+const PRN_SIZE_DOUBLE   = `${ESC}!\x38`;  // negrita + doble alto + doble ancho
+const PRN_SIZE_NORMAL   = `${ESC}!\x00`;  // vuelta a modo normal (Fuente A)
 
 function centerTicketText(value, width = TICKET_COLUMNS) {
   const text = String(value).slice(0, width);
@@ -1651,12 +1656,12 @@ const receiptDate = new Date().toLocaleString('es-ES', {
 const rule = '-'.repeat(TICKET_COLUMNS);
 
 const receiptLines = [
-  PRN_INIT + PRN_ALIGN_CENTER + PRN_BOLD_ON + PRN_SIZE_DOUBLE + "CARL'S JR" + PRN_SIZE_NORMAL + PRN_BOLD_OFF,
+  PRN_INIT + PRN_ALIGN_CENTER + PRN_SIZE_DOUBLE + "CARL'S JR" + PRN_SIZE_NORMAL,
   centerTicketText('Bigger. Better. Burgers.'),
   centerTicketText(receiptDate),
 
   PRN_ALIGN_LEFT + rule,
-  PRN_ALIGN_CENTER + PRN_BOLD_ON + PRN_SIZE_DOUBLE + `PEDIDO #${orderNum}` + PRN_SIZE_NORMAL + PRN_BOLD_OFF,
+  PRN_ALIGN_CENTER + PRN_SIZE_DOUBLE + `PEDIDO #${orderNum}` + PRN_SIZE_NORMAL,
   PRN_ALIGN_LEFT + rule,
 
   ...cartSnapshot.map(item => {
