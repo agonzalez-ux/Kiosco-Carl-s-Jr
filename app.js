@@ -807,7 +807,7 @@ function openDrinkPicker(p) {
   const variantHtml = opts.map(o => `
     <button class="combo-opt pick-variant" data-variant="${o.id}" type="button">
       ${o.img
-        ? `<img src="${o.img}" alt="" onerror="this.outerHTML='<span class=combo-opt-icon>${o.icon}</span>'">`
+        ? `<img src="${o.img}" alt="" style="width:48px;height:48px;object-fit:contain;object-position:center;display:block;flex-shrink:0;" onerror="this.outerHTML='<span class=combo-opt-icon>${o.icon}</span>'">`
         : `<span class="combo-opt-icon">${o.icon}</span>`}
       <div><div class="combo-opt-label">${o.label}</div></div>
     </button>`).join('');

@@ -345,6 +345,9 @@
       letter-spacing: .5px;
       text-transform: uppercase;
       margin-bottom: 3px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     .status-label.preparing { color: #ff6600; }
@@ -543,7 +546,7 @@ function sig(orders) {
 function statusMeta(status) {
   if (status === 'pending')   return { icon: '🔥', label: 'Pedido recibido, en breve empezamos' };
   if (status === 'preparing') return { icon: '🔥', label: '¡Lo estamos preparando!' };
-  if (status === 'ready')     return { icon: '⭐', label: '¡LISTO! Ve a recoger tu pedido' };
+  if (status === 'ready')     return { icon: '⭐', label: '¡LISTO!' };
   return { icon: '❓', label: status };
 }
 

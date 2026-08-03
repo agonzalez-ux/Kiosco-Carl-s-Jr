@@ -485,7 +485,20 @@
     .modal-box {
       background: var(--dark); border: 2px solid var(--border); border-radius: 20px;
       padding: 32px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto;
+      position: relative;
     }
+
+    /* Botón para volver al índice de la demo desde "¿Quién cocina hoy?" */
+    .wm-demo-back {
+      position: absolute; top: 14px; right: 14px;
+      font-size: .62rem; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; text-decoration: none;
+      color: #999; border: 1px solid #4a4326; border-radius: 6px;
+      background: rgba(0,0,0,.55);
+      padding: 4px 9px; transition: color .2s, border-color .2s;
+      white-space: nowrap;
+    }
+    .wm-demo-back:hover { color: var(--yellow); border-color: var(--yellow); }
 
     /* Worker selection modal */
     .wm-title { font-family: var(--font-head); font-size: 2rem; text-transform: uppercase; margin-bottom: 6px; }
@@ -759,6 +772,7 @@
   <!-- ── WORKER SELECTION MODAL ── -->
   <div id="workerModal" class="modal-backdrop">
     <div class="modal-box">
+      <a href="./index.html" class="wm-demo-back" title="Volver al inicio de la demo">⬡ Demo</a>
       <h2 class="wm-title">¿Quién cocina hoy?</h2>
       <p class="wm-sub">Selecciona tu nombre para llevar el ranking de puntos 🏆</p>
       <div class="wm-grid" id="workerGrid"></div>
@@ -1322,6 +1336,20 @@
       activeOrderId   = null;
       activeOrderTs   = null;
       activeStartTime = null;
+
+      // El panel central se queda con el timer y el botón "¡Pedido listo!"
+      // del pedido soltado si no se resetea aquí: el botón queda "muerto"
+      // (no pasa nada al pulsarlo) y confunde a quien vuelve del break.
+      const active = document.getElementById('kdsActive');
+      if (active) {
+        active.innerHTML = `
+          <div class="active-empty" id="activeEmpty">
+            <div class="active-empty-icon">🍔</div>
+            <h2>Selecciona un pedido</h2>
+            <p>Toca un pedido de la cola para empezar a prepararlo</p>
+          </div>
+        `;
+      }
     }
 
     function startOrder(order) {
