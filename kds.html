@@ -1277,10 +1277,37 @@
     }
 
     /* ── QUEUE RENDER ── */
+    /* Si hay un pedido "preparing" en el almacenamiento pero esta pestaña
+       no lo tiene asociado (activeOrderId es una variable en memoria: se
+       pierde al recargar la página, cambiar de persona o salir y volver
+       al KDS), se readopta aquí. Sin esto, ese pedido no aparecía en
+       ningún sitio: ni en la cola (no está "pending") ni en el panel
+       activo (activeOrderId es null), así que parecía haber desaparecido
+       aunque seguía guardado. Los pedidos solo deben desaparecer de
+       verdad al pulsar "Finalizar jornada". */
+    function resumeActiveOrderIfAny(orders) {
+      if (activeOrderId) return;
+      const inProgress = orders.find(o => o.status === 'preparing');
+      if (!inProgress) return;
+
+      activeOrderId   = inProgress.id;
+      activeOrderTs   = inProgress.timestamp;
+      activeStartTime = inProgress.preparingAt || inProgress.timestamp || Date.now();
+      clearInterval(timerInterval);
+      renderActiveOrder(inProgress);
+      timerInterval = setInterval(() => tickTimer(inProgress), 500);
+    }
+
     function render() {
       const orders = getOrders();
+      resumeActiveOrderIfAny(orders);
       const pending = orders.filter(o => o.status === 'pending');
       document.getElementById('queueBadge').textContent  = pending.length;
+
+      // Antes se llamaba después del "return" de cola vacía, así que si la
+      // cola se quedaba a 0 (p.ej. al Finalizar jornada) los "Despachados"
+      // se quedaban con el contenido de antes en pantalla.
+      renderDispatched();
 
       const list = document.getElementById('queueList');
       list.innerHTML = '';
@@ -1289,8 +1316,6 @@
         list.innerHTML = `<div class="q-empty"><div class="q-empty-icon">🍽️</div><p>Sin pedidos en cola</p></div>`;
         return;
       }
-
-      renderDispatched();
 
       pending.forEach(order => {
         const diff = calcDifficulty(order);
@@ -1756,20 +1781,42 @@
     }
 
     document.getElementById('btnPodium').addEventListener('click', showPodium);
-    /* Cerrar las métricas de cierre reinicia SOLO el marcador de la jornada.
-       INC-12/16: los pedidos pendientes y el contador de números se conservan,
-       para que al cambiar de turno sigan visibles y la numeración no vuelva a 1.
-       INC-11: ya no se recarga la página, así que un fallo de red no deja el
-       sistema colgado. */
+    /* "Finalizar jornada" reinicia TODO el kiosco: los pedidos (kiosco, KDS
+       y pantalla de "Estado de Pedidos") desaparecen y la numeración vuelve
+       a empezar por el #1. Antes (INC-12/16) se dejaban los pedidos y el
+       contador tal cual al cerrar, pensando en cambios de turno dentro del
+       mismo día — pero eso es justo lo que "cambiar de persona" necesita
+       (ver resumeActiveOrderIfAny), así que ya no hace falta que "Finalizar
+       jornada" se comporte igual: ahora sí es un reinicio completo y
+       explícito, y solo pasa cuando se pulsa este botón.
+       INC-11: se sigue sin recargar la página, así que un fallo de red no
+       deja el sistema colgado. */
     document.getElementById('btnPodiumClose').addEventListener('click', () => {
       localStorage.removeItem(STORAGE_WORKERS);
       document.getElementById('podiumModal').hidden = true;
+
+      CJSync.resetAll().catch(e => console.warn('[KDS] resetAll error:', e));
+
+      clearInterval(timerInterval);
+      timerInterval   = null;
+      activeOrderId   = null;
+      activeOrderTs   = null;
+      activeStartTime = null;
+      const active = document.getElementById('kdsActive');
+      if (active) {
+        active.innerHTML = `
+          <div class="active-empty" id="activeEmpty">
+            <div class="active-empty-icon">🍔</div>
+            <h2>Selecciona un pedido</h2>
+            <p>Toca un pedido de la cola para empezar a prepararlo</p>
+          </div>
+        `;
+      }
 
       /* V3 KDS INC-01: cerrar la jornada tiene que SALIR de verdad, volviendo
          a la pantalla de "¿Quién cocina hoy?". Al quitar el reload (que
          colgaba el sistema) se había perdido esa salida y no se podía salir
          aunque no quedaran pedidos. Se cierra sesión sin recargar. */
-      releaseActiveOrder();
       currentWorker = null;
       document.getElementById('workerModal').hidden = false;
 
