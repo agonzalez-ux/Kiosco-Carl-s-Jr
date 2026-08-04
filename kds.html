@@ -1268,7 +1268,11 @@
           <button class="d-card-btn">✓ Despachar</button>
         `;
         card.querySelector('.d-card-btn').addEventListener('click', () => {
-          const all = getOrders().filter(o => o.id !== order.id);
+          /* Los números de pedido se reciclan cada 200 (ver nextOrderNum),
+             así que dos pedidos pueden compartir el mismo id a la vez. Filtrar
+             solo por id borraba también cualquier otro pedido (aunque
+             estuviera pendiente) que compartiera número con el despachado. */
+          const all = getOrders().filter(o => !(o.id === order.id && o.timestamp === order.timestamp));
           saveOrders(all);
           renderDispatched();
         });
