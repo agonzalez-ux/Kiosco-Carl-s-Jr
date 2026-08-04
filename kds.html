@@ -1358,6 +1358,13 @@
         const prev = orders.find(o => o.timestamp === activeOrderTs);
         if (prev && prev.status === 'preparing') {
           if (!confirm(`Hay un pedido en preparación (#${activeOrderId}). ¿Pasar al siguiente de todos modos?`)) return;
+          /* INC-01: al confirmar el cambio de pedido, el anterior se
+             quedaba marcado "preparing" para siempre (no volvía a la cola
+             porque esta solo lista los pendientes, y en la pantalla del
+             cliente se quedaba "preparando" sin llegar nunca a listo).
+             Se suelta igual que al irse de break, para que otro cocinero
+             pueda retomarlo. */
+          releaseActiveOrder();
         }
       }
       // Mark as preparing

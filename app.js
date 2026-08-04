@@ -330,12 +330,15 @@ const MODIFIERS = [
   { id: 'extra-bacon',  label: 'Extra bacon',    price: 25 }
 ];
 
-/* INC-05: se añade el pago en efectivo. La tarjeta se cobra por datáfono,
-   por eso no se piden los datos de la tarjeta en pantalla. */
+/* INC-05 / INC-03 (reporte V4): se añade el pago en efectivo. La tarjeta
+   se cobra por datáfono, por eso no se piden los datos de la tarjeta en
+   pantalla. El efectivo usa un emoji porque no hay ningún pay-cash.png
+   en el proyecto; renderPaymentGrid ya soporta ese fallback (m.icon). */
 const PAYMENT_METHODS = [
   { id: 'card',    label: 'Pago con Tarjeta', img: './pay-card.png' },
   { id: 'apple',   label: 'Apple Pay',        img: './pay-apple.png' },
   { id: 'google',  label: 'Google Pay',       img: './pay-google.png' },
+  { id: 'cash',    label: 'Efectivo',         icon: '💵' },
 ];
 
 // ── STRIPE CONFIG ──────────────────────────────────────────────
@@ -1655,6 +1658,33 @@ const receiptDate = new Date().toLocaleString('es-ES', {
 
 const rule = '-'.repeat(TICKET_COLUMNS);
 
+/* INC-02: si print-helper.js no puede imprimir (ayudante caído, impresora
+   no compartida, etc.) el cliente se quedaba con un botón de error y sin
+   ticket. Este HTML es la red de seguridad: si falla la impresión
+   silenciosa, se imprime igualmente mediante el diálogo del navegador
+   (ver printReceipt más abajo), para que el ticket salga de una forma u
+   otra. No lleva los códigos ESC/POS (no significan nada en HTML); el
+   grande/negrita se consigue aquí con CSS normal. */
+const receiptHtml = `
+  <div class="ticket-logo">CARL'S JR</div>
+  <div class="ticket-tag">Bigger. Better. Burgers.</div>
+  <div class="ticket-date">${receiptDate}</div>
+  <div class="ticket-rule"></div>
+  <div class="ticket-order">PEDIDO #${orderNum}</div>
+  <div class="ticket-rule"></div>
+  ${cartSnapshot.map(item => {
+    const product = productById(item.productId);
+    const name = product ? pName(product) : item.name;
+    const price = EUR.format(cartLineTotal(item));
+    return `<div class="ticket-line"><span>${item.qty}× ${name}</span><span>${price}</span></div>`;
+  }).join('')}
+  <div class="ticket-rule"></div>
+  <div class="ticket-line ticket-total"><span>TOTAL</span><span>${EUR.format(total)}</span></div>
+  <div class="ticket-rule"></div>
+  ${!state.isGuest ? `<div class="ticket-pts">+${pts} puntos acumulados ⭐</div>` : ''}
+  <div class="ticket-thanks">¡Gracias por tu visita!</div>
+`;
+
 const receiptLines = [
   PRN_INIT + PRN_ALIGN_CENTER + PRN_SIZE_DOUBLE + "CARL'S JR" + PRN_SIZE_NORMAL,
   centerTicketText('Bigger. Better. Burgers.'),
@@ -1698,7 +1728,9 @@ const receiptText = receiptLines.join('\n');
   /* El ticket NO se imprime solo: únicamente si el cliente pulsa el botón.
      Al pulsarlo, todo pasa en segundo plano sin que el cliente vea nada:
      se guarda el .txt y se manda a imprimir a través del ayudante local
-     (print-helper.js), sin ningún diálogo del navegador. */
+     (print-helper.js), sin ningún diálogo del navegador. Si eso falla
+     (INC-02), se cae al diálogo de impresión del navegador con
+     receiptHtml para que el ticket salga igualmente. */
   const btnPrint = $('btnPrintTicket');
   if (btnPrint) {
     btnPrint.disabled = false;
@@ -1706,7 +1738,8 @@ const receiptText = receiptLines.join('\n');
     btnPrint.onclick = () => {
       btnPrint.disabled = true;
       btnPrint.textContent = '🖨️ Imprimiendo…';
-      printTicketSilently(orderNum, receiptText);    };
+      printTicketSilently(orderNum, receiptText, receiptHtml);
+    };
   }
 
   $('checkoutPayment').hidden = true;
@@ -1763,7 +1796,7 @@ function animateDcBar(pct) {
    (diálogo del navegador) para que el ticket salga de todos modos. */
 const PRINT_HELPER_URL = 'http://localhost:5217/imprimir';
 
-function printTicketSilently(orderNum, text) {
+function printTicketSilently(orderNum, text, fallbackHtml) {
   fetch(PRINT_HELPER_URL, {
     method: 'POST',
     headers: {
@@ -1796,18 +1829,80 @@ function printTicketSilently(orderNum, text) {
       }
     })
     .catch(error => {
+      /* INC-02: antes, si esto fallaba (ayudante caído, impresora no
+         compartida...), el cliente se quedaba solo con un botón de error
+         y sin ticket. Ahora se cae al diálogo de impresión del navegador
+         como red de seguridad, para que el ticket salga de una forma u
+         otra — igual que decía el comentario de arriba, pero que no se
+         llegaba a hacer realmente. */
       console.warn(
-        '[Tickets] No se pudo imprimir mediante print-helper.js:',
+        '[Tickets] No se pudo imprimir mediante print-helper.js, se usa el diálogo del navegador:',
         error
       );
+
+      if (fallbackHtml) printReceipt(fallbackHtml);
 
       const btnPrint = $('btnPrintTicket');
 
       if (btnPrint) {
         btnPrint.disabled = false;
-        btnPrint.textContent = '⚠️ Reintentar impresión';
+        btnPrint.textContent = '🖨️ Imprimir ticket';
       }
     });
+}
+
+/* ─── IMPRESIÓN DE TICKET (iframe aislado, tamaño de ticket térmico) ───
+   Red de seguridad de printTicketSilently: se abre en un iframe aparte
+   (no la página entera) para que Admira no imprima el reproductor en
+   blanco por detrás, y se cierra solo al terminar. */
+function printReceipt(bodyHtml) {
+  const existing = document.getElementById('print-frame');
+  if (existing) existing.remove();
+
+  const iframe = document.createElement('iframe');
+  iframe.id = 'print-frame';
+  iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;visibility:hidden;';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentDocument;
+  doc.open();
+  doc.write(`<!doctype html>
+<html><head><meta charset="utf-8"><title></title>
+<style>
+  @page { size: 80mm auto; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    width: 80mm; padding: 4mm 5mm; color: #000;
+    font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;
+  }
+  .ticket-logo { text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 2px; }
+  .ticket-tag  { text-align: center; font-size: 10px; color: #333; }
+  .ticket-date { text-align: center; font-size: 10px; color: #333; margin-top: 2px; }
+  .ticket-rule { border-top: 1px dashed #000; margin: 6px 0; }
+  .ticket-order { text-align: center; font-size: 22px; font-weight: 900; }
+  .ticket-line { display: flex; justify-content: space-between; margin: 3px 0; }
+  .ticket-total { font-weight: 900; font-size: 14px; }
+  .ticket-pts, .ticket-thanks { text-align: center; font-size: 10px; color: #333; margin-top: 4px; }
+</style>
+</head><body>${bodyHtml}</body></html>`);
+  doc.close();
+
+  iframe.onload = () => {
+    const win = iframe.contentWindow;
+    win.focus();
+    win.print();
+
+    win.addEventListener('afterprint', () => {
+      setTimeout(() => iframe.remove(), 300);
+    });
+
+    setTimeout(() => {
+      if (document.getElementById('print-frame')) {
+        iframe.remove();
+      }
+    }, 2000);
+  };
 }
 
 /* ─── CONFETTI ─── */
