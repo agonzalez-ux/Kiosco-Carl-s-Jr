@@ -332,13 +332,12 @@ const MODIFIERS = [
 
 /* INC-05 / INC-03 (reporte V4): se añade el pago en efectivo. La tarjeta
    se cobra por datáfono, por eso no se piden los datos de la tarjeta en
-   pantalla. El efectivo usa un emoji porque no hay ningún pay-cash.png
-   en el proyecto; renderPaymentGrid ya soporta ese fallback (m.icon). */
+   pantalla. */
 const PAYMENT_METHODS = [
   { id: 'card',    label: 'Pago con Tarjeta', img: './pay-card.png' },
   { id: 'apple',   label: 'Apple Pay',        img: './pay-apple.png' },
   { id: 'google',  label: 'Google Pay',       img: './pay-google.png' },
-  { id: 'cash',    label: 'Efectivo',         icon: '💵' },
+  { id: 'cash',    label: 'Efectivo',         img: './pay-cash.png' },
 ];
 
 // ── STRIPE CONFIG ──────────────────────────────────────────────
